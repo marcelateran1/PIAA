@@ -1,0 +1,256 @@
+/* --- Estilo General para el cuerpo --- */
+*{
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;	
+}
+
+body{	
+	background: linear-gradient(to left, #066272, #001110);
+	font-family: 'Open Sans', sans-serif;
+    	color: white;
+	
+}
+
+/* --- Contenedor Principal --- */
+.contenedor{
+  	position: relative;	
+	min-height: 100vh;
+	width: 100vw;
+	display: grid;
+	grid-template-rows: auto 1fr auto;
+	align-items: center;
+	overflow: hidden;	
+}
+
+/* --- Video Contenedor--- */
+.video-contenedor video{ 	
+	position: fixed;
+	width: 100%;
+    	height: 100%;
+	object-fit: cover;
+	pointer-events: none;	
+	z-index: -2;	
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6); 
+    z-index: -1;
+}
+
+/* --- Header y menú --- */
+header{
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	padding: 1.56rem 5%;
+	z-index: 10;
+}
+
+header a.logotipo{
+	font-size: 1.6em;
+	text-decoration: none;
+	color: rgb(223, 199, 166);
+	font-family: 'Bebas Neue', cursive;
+	font-weight: normal;
+}
+
+.logotipo:hover{
+	color: rgb(156, 139, 116);
+}
+
+header .menu{
+	display: flex;
+	gap: 1rem;
+	font-size: 0.9em;
+	font-weight: normal;		
+}
+
+header .menu a{
+	padding-right: 1.2rem;
+	text-decoration: none;
+	letter-spacing: 1px;
+	color: rgb(156, 139, 116);	
+}
+
+header .menu a:hover, header .menu a.activo{
+	color: rgb(223, 199, 166);
+}
+
+/* --- Contenido --- */
+main{
+	display: flex;
+	flex-direction: column;
+	padding: 2rem 5% 2rem;	
+	gap: 0.8rem;
+	z-index: 2;
+}
+
+h1{
+	font-family: 'Poppins', sans-serif;
+	font-size: clamp(4.8rem, 7vw, 7rem);
+	letter-spacing: 0.4rem;
+	line-height: clamp(4rem, 7vw, 7rem);
+	text-transform: uppercase;
+}
+
+
+/* --- Sección --- */
+.section{
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: max(35ch, 55vw);
+	padding: max(0.6rem, 1rem);
+	border-right: 2px groove hsla(34.49999999999997, 16.81%, 53.33%, 1.00);
+	border-left: 2px groove hsla(34.49999999999997, 16.81%, 53.33%, 1.00);
+	border-radius: 20px;
+}
+
+.section p{
+	font-size: clamp(1rem, 2vw, 1.2rem);
+	line-height: clamp(1.3rem, 1.8vw, 1.8rem);
+	font-weight: normal;
+	letter-spacing: 0.03rem;
+	margin-bottom: 1rem;
+	text-align: start;
+	word-break: break-word;			
+}
+
+/* --- Botón --- */
+.btn-1{
+	padding: 0.5em 1em;	
+	font-family: 'Open Sans', sans-serif;
+	color: white;	
+	font-size: 0.8em;
+  	border: none;
+	border-radius: 10px;
+  	cursor: pointer;
+	background: linear-gradient(150deg, #066272, #001110);
+	transition: transform 0.3s, box-shadow 0.3s;	
+}
+
+.btn-1:hover {
+   	box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+	transform: scale(1.05);
+}
+
+/* ---- Pie de página --- */
+footer{
+	position: absolute;
+	z-index: 10;
+	bottom: 0;	
+	width: 100%;
+	padding: 0.62rem;
+	display: flex;
+	justify-content: flex-end;
+	font-size: 0.5em;
+	font-weight: normal;
+	color: rgb(156, 139, 116);
+}
+
+footer .menu-2{
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	font-weight: normal;			
+}
+
+footer .menu-2 a{
+	margin-right: 1.5rem;
+	text-decoration: none;
+	letter-spacing: 0.06rem;
+	color: rgb(156, 139, 116);	
+}
+
+footer .menu-2 a:hover{
+	color: rgb(223, 199, 166);
+}
+
+/* --- OVERLAY FULLSCREEN MENU --- */
+.overlay-menu {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100vh;
+	background: linear-gradient(to top, rgba(0, 0, 0, 0.8)50%,rgba(0, 0, 0, 0.8)50%);
+	backdrop-filter: blur(9px);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 999;
+	flex-direction: column;
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity 0.5s ease;
+}
+
+.overlay-menu.open {
+	opacity: 1;
+	visibility: visible;
+}
+
+.overlay-menu ul {
+	list-style: none;
+	padding: 0;
+	text-align: center;
+}
+
+.overlay-menu li {
+	margin: 1.5rem 0;
+}
+
+.overlay-menu a {
+	font-size: 2.1rem;
+	color: rgb(223, 199, 166);
+	text-decoration: none;
+	transition: color 0.3s;
+	position: relative;
+}
+
+.overlay-menu a:hover {
+	color: rgb(156, 139, 116);
+}
+
+.overlay-menu a::after {
+	content: '';
+	height: 3px;
+	width: 0;
+	background: #801c1d;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	transition: width 0.5s;
+}
+
+.overlay-menu a:hover:after {
+	width: 100%;
+}
+
+
+/* Botón para cerrar el overlay */
+.close-overlay {
+	position: absolute;
+	top: 20px;
+	right: 30px;
+	font-size: 2rem;
+	color: rgb(223, 199, 166);
+	cursor: pointer;
+}
+
+.close-overlay:hover {
+	color: rgb(156, 139, 116);
+}
+
+
+}

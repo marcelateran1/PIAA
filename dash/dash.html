@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+	<title>Dashboard - Asma</title>
+
+	<link rel="stylesheet" href="CSS/styles.css"/>
+
+	<link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css"/>
+
+	<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Open+Sans&family=Poppins:wght@900&display=swap" rel="stylesheet"/>
+
+
+</head>
+
+<body>
+  <div class="video-overlay">
+    <video autoplay muted loop id="bg-video">
+      <source src="../vid/video_5.mp4" type="video/mp4" />
+    </video>
+  </div>
+
+  <header>
+	<a href="../index.html" class="logotipo">PIAA</a>
+
+	<nav class="menu">
+      	<a href="../index.html" class="activo">Inicio</a>    
+    	</nav>
+  </header>
+
+
+  <section class="main-container">
+    	<div class="tab-nav-bar">
+      		<div class="tab-navigation">
+        	<i class="uil uil-angle-left left-btn"></i>
+        	<i class="uil uil-angle-right right-btn"></i>
+	        <ul class="tab-menu">
+          		<li class="tab-btn active">Epidemiología</li>
+	        	<li class="tab-btn">Genética</li>
+			<li class="tab-btn">Estudios genéticos</li>
+		        <li class="tab-btn">Alergénos</li>
+		        <li class="tab-btn">Vías de señalización</li>
+		        <li class="tab-btn">Biomarcadores</li>
+		        <li class="tab-btn">Farmacogenómica</li>
+	        </ul>
+		</div>
+	</div>
+
+
+   <!-- Secciones del Dashboard -->
+	<!-- Epidemiología -->
+
+	<div class="tab-content">
+  		<div class="tab active">
+    			<section id="epidemio" class="box">
+      				<h2>Epidemiología</h2>
+      				<p>Consulta la epidemiología asociada al asma alérgica en distintas regiones del mundo.</p>
+
+	<!-- Tarjetas resumen -->
+				<div class="epidemio-cards">
+        				<div class="card"><span>Prevalencia global</span><strong>15%</strong></div>
+					<div class="card"><span>Mayor incidencia</span><strong>6–18 años</strong></div>
+					<div class="card"><span>Factores de riesgo</span><strong>Genéticos,<br>ambientales</strong></div>
+					<div class="card"><span>Tendencia</span><strong>Al alza</strong></div>
+				</div>
+
+	<!-- Gráficos -->
+				<div class="chart-wrapper">
+  					<h3>Distribución por región (%)</h3>
+
+  	<!-- lineal -->
+  					<div class="chart-container">
+    						<canvas id="lineChart"></canvas>
+  					</div>
+
+  	<!-- geográfico -->
+  					<div class="chart-container">
+    						<canvas id="geoChart"></canvas>
+  					</div>
+				</div>
+
+	<!-- Tabla -->
+      				<div class="table-wrapper">
+        				<h3>Detalle por región</h3>
+					<div class="table-container">
+         					<table>
+           						<thead>
+              							<tr>
+                						<th>Región</th>
+                						<th>Asma (%)</th>
+                						<th>Asma alérgico (%)</th>
+                						<th>Fuente</th>
+              							</tr>
+            						</thead>
+            						<tbody>
+              							<tr><td>Europa</td><td>9</td><td>7.5</td><td>Global Asthma Report 2022</td></tr>
+              							<tr><td>América del Norte</td><td>10.5</td><td>9.8</td><td>CDC, 2021</td></tr>
+             							<tr><td>América Latina</td><td>12</td><td>10.2</td><td>ISAAC Study</td></tr>
+              							<tr><td>Asia</td><td>6.5</td><td>5.3</td><td>WHO, 2020</td></tr>
+            						</tbody>
+          					</table>
+					</div>
+        			</div>
+      			 </section>
+		</div>
+	</div>
+
+
+      	<!-- ... Genética ... -->
+			<div class="tab">
+  				<section id="gene" class="box">
+    					<h2>Genética</h2>
+    					<p>Actualmente, el endotipo más frecuente y mejor caracterizado es el asma alérgica eosinofílica (inflamación T2). En esta sección consulta genes vinculados a este endotipo.</p>
+
+    	<!-- Tarjetas resumen -->
+    					<div class="genetics-cards">
+    						<div class="card"><span>Genes identificados</span><strong id="kpiGenes">—</strong></div>
+    						<div class="card"><span>Cromosomas<br>involucrados</span><strong id="kpiCromos">—</strong></div>
+    						<div class="card"><span>Tejidos<br>mapeados</span><strong id="kpiTejidos">—</strong></div>
+    						<div class="card"><span>Tejido más<br>frecuente</span><strong id="kpiTejidoTop">—</strong></div>
+  					</div>
+
+
+	<!-- Filtros -->
+    					<div class="filter-section">
+    						<h3>Filtros</h3>
+    						<div class="filters">
+      							<select id="chromosomeFilter">
+        						<option value="">Todos los cromosomas</option>
+      							</select>
+      							<select id="tissueFilter">
+        						<option value="">Todos los tejidos</option>
+      							</select>
+      							<input type="text" id="geneSearch" placeholder="Buscar gen..." />
+    						</div>
+  					</div>
+
+
+    	<!-- Tabla principal -->
+    					<div class="table-wrapper">
+    						<h3>Genes asociados al asma alérgica</h3>
+    						<div class="table-container">
+      							<table id="genesTable">
+        						<thead>
+          							<tr>
+            							<th>Gen</th>
+            							<th>Nombre</th>
+            							<th>Ubicación</th>
+            							<th>Expresión Tisular</th>
+          							</tr>
+        						</thead>
+        						<tbody>
+          							<!-- Datos dinámicos -->
+        						</tbody>
+      							</table>
+    						</div>
+    					
+
+	<!-- Paginación -->
+            					<div class="pagination">
+      							<button id="prevPage" class="pager-btn" aria-label="Página anterior">
+        						<i class="uil uil-arrow-left"></i>
+      							</button>
+      							<span id="pageInfo" class="page-info">1 / 1</span>
+      							<button id="nextPage" class="pager-btn" aria-label="Página siguiente">
+        						<i class="uil uil-arrow-right"></i>
+      							</button>
+    						</div>
+  					</div>
+
+
+
+    	<!-- Modal -->
+    					<div id="geneModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    						<div class="modal-content">
+      							<button class="close" aria-label="Cerrar">&times;</button>
+      							<h3 id="modalTitle"></h3>
+      							<div id="modalBody"></div>
+    						</div>
+  					</div>
+				</section>
+			</div>
+
+
+<!-- Estudios genéticos -->
+
+			<div class="tab">
+    				<section id="estu-gene" class="box">
+					<div class="section-header">
+			        		<h2>Estudios Genéticos</h2>
+				       		<p>Evolución histórica de los descubrimientos genéticos en asma alérgica desde 1989 hasta 2023</p>
+				        </div>
+					
+	<!-- Tarjetas resumen -->
+
+            					<div class="stat-card">
+							<div class="card"><span>Estudios Clave</span><strong>13</strong></div>
+                					<div class="card"><span>Años de Investigación</span><strong>34</strong></div>	
+							<div class="card"><span>Metodologías</span><strong>5</strong></div>
+							<div class="card"><span>Sujetos Estudiados</span><strong>450k+</strong></div>
+            					</div>
+
+        				
+        				<div class="timeline-controls">
+            					<button class="filter-btn active" data-filter="all">Todos</button>
+           					<button class="filter-btn" data-filter="gwas">GWAS</button>
+            					<button class="filter-btn" data-filter="ligamiento">Ligamiento</button>
+            					<button class="filter-btn" data-filter="epigenomica">Epigenómica</button>
+            					<button class="filter-btn" data-filter="funcional">Funcional</button>
+        				</div>
+
+        				<div class="timeline-container">
+           					<div class="timeline-line">
+                     					<!-- Los elementos se generarán dinámicamente -->
+						</div>
+            					<div id="timeline-items"></div>
+        				</div>
+       				
+    				</section>
+			</div>
+
+
+
+	<!-- Alergénos -->
+			<div class="tab">
+  				<section id="Alergenos" class="box">
+    					<div class="section-header">
+      						<h2>Alergénos</h2>
+      						<p>Principales alérgenos involucrados en el asma alérgica: su clasificación, características y prevalencia clínica.</p>
+
+			 <!-- Controles de filtrado -->
+        				<div class="alerg-toolbar">
+          					<div class="alerg-inputs">
+            					<label>
+              						Categoría
+              						<select id="filterCategoria">
+                						<option value="__all__">Todas</option>
+              						</select>
+            					</label>
+            					<label>
+              						Asociación
+              						<select id="filterAsociacion">
+                						<option value="__all__">Todas</option>
+                						<option value="Alta">Alta</option>
+                						<option value="Media">Media</option>
+                						<option value="Baja">Baja</option>
+              						</select>
+            					</label>
+            					<label>
+              						Región
+              						<select id="filterRegion">
+                						<option value="__all__">Todas</option>
+              						</select>
+            					</label>
+          					</div>
+          					<div class="alerg-actions">
+            						<input id="filterSearch" type="search" placeholder="Buscar alérgeno o fuente..." />
+            						<button id="btnReset" class="btn-reset"><i class="uil uil-sync"></i> Reset</button>
+          					</div>
+        				</div>
+
+       						<!-- KPIs -->
+        					<div class="alerg-kpis">
+          						<div class="kpi-card">
+            							<div class="kpi-title">Categorías</div>
+            							<div class="kpi-value" id="kpiCategorias">—</div>
+          						</div>
+          						<div class="kpi-card">
+            							<div class="kpi-title">Alérgenos</div>
+            							<div class="kpi-value" id="kpiAlergenos">—</div>
+          						</div>
+          						<div class="kpi-card">
+            							<div class="kpi-title">Exposición media (%)</div>
+            							<div class="kpi-value" id="kpiExposicionMedia">—</div>
+          						</div>
+        					</div>
+
+        					<!-- Gráficos -->
+        					<div class="alerg-grid">
+          						<div class="alerg-card">
+            							<div class="alerg-card-header">
+              							<h3>Exposición promedio por categoría</h3>
+            							</div>
+								<div class="chart-box">
+            							<canvas id="chartExpoPorCategoria"></canvas>
+           							</div>
+							</div>
+
+          						<div class="alerg-card">
+            							<div class="alerg-card-header">
+              							<h3>Distribución de asociación por categoría</h3>
+            							</div>
+								<div class="chart-box">
+            							<canvas id="chartAsociacionPorCategoria"></canvas>
+          							</div>
+							</div>	
+
+          						<div class="alerg-card">
+            							<div class="alerg-card-header">
+              							<h3>Top 8 alérgenos por exposición</h3>
+              							<small id="subTopN">(según filtros activos)</small>
+            							</div>
+								<div class="chart-box">
+            							<canvas id="chartTopAlergenos"></canvas>
+          							</div>
+        						</div>
+						</div>
+
+        					<!-- Tabla -->
+        					<div class="alerg-table-wrap">
+							<h3 class="alerg-table-title">Alérgenos</h3>
+          						<table id="alergTable">
+            							<thead>
+              								<tr>
+                							<th>Categoría</th>
+                							<th>Alérgeno</th>
+                							<th>Fuente</th>
+                							<th>Asociación</th>
+                							<th>Exposición (%)</th>
+                							<th>Regiones</th>
+                							<th>Referencia</th>
+              								</tr>
+            							</thead>
+            							<tbody>
+              							<!-- Rows renderizadas por JS -->
+            							</tbody>
+          						</table>
+        					</div>
+
+        					<!-- Aviso -->
+        					<div class="alerg-hint">
+          
+        					</div>
+
+    				</section>
+     			</div>
+
+    					
+
+
+      <!-- ... VÍAS DE SEÑALIZACIÓN ... -->
+
+    		<div class="tab">
+      <section id="vias-seña" class="box">
+        <div class="pathways-container">
+          <div class="pathways-header">
+            <h2>Vías de Señalización</h2>
+            <p>Explora las principales vías moleculares involucradas en el asma alérgico.</p>
+
+            <!-- Controles -->
+            <div class="search-controls">
+              <div class="filter-controls">
+                <select id="pathway-filter">
+                  <option value="all">Todas las vías</option>
+                  <option value="cytokine">Citocinas</option>
+                  <option value="immune">Sistema inmune</option>
+                  <option value="inflammatory">Inflamatorias</option>
+                  <option value="other">Otras</option>
+                </select>
+              </div>
+              <div class="search-bar">
+                <i class="uil uil-search"></i>
+                <input id="pathway-search" type="search" placeholder="Buscar vía, componente, efecto…">
+              </div>
+            </div>
+          </div>
+
+          <!-- KPIs (sin íconos) -->
+          <div class="pathways-stats">
+            <div class="stat-card">
+              <div class="stat-info">
+                <h4 id="kpiVias">—</h4>
+                <p>Vías detectadas</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-info">
+                <h4 id="kpiComponentes">—</h4>
+                <p>Componentes únicos</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-info">
+                <h4 id="kpiCategorias">—</h4>
+                <p>Categorías</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gráficos -->
+          <div class="pathway-charts">
+            <div class="chart-card">
+              <div class="chart-header">
+                <h3>Vías por categoría</h3>
+              </div>
+              <div class="chart-box"><canvas id="chartPathwayCategorias"></canvas></div>
+            </div>
+
+            <div class="chart-card">
+              <div class="chart-header">
+                <h3>Top componentes</h3>
+                <small id="topCompMeta">(según filtros activos)</small>
+              </div>
+              <div class="chart-box"><canvas id="chartTopComponentes"></canvas></div>
+            </div>
+          </div>
+
+          <!-- Grid de tarjetas (información completa visible) -->
+          <div class="pathways-grid" id="pathways-grid"></div>
+
+        </div>
+      </section>
+    </div>
+
+
+	<!-- ... otras secciones se mantienen ... -->
+
+	<div class="tab">
+    	<section id="biomarcadores" class="box">
+        	<h2>Biomarcadores</h2>
+        	<p>Información sobre biomarcadores en asma.</p>
+       	</section>
+ 	</div>
+
+	<!-- Farmacogenómica -->
+	<div class="tab">
+    	<section id="farmacogenomica" class="box">
+        	<h2>Farmacogenómica</h2>
+        	<p>Genes candidatos farmacogenéticos en asma.</p>
+       	</section>
+ 	</div>
+
+    	
+  </section>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="java/script.js"></script>
+
+</body>
+</html>

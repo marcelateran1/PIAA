@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Página web con información sobre el asma con componente alérgico">
+   
+	<title>¿Quiénes somos?</title>
+    
+<link rel="stylesheet" href="CSS/qestilos.css">
+    
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Open+Sans&family=Poppins:wght@900&display=swap" rel="stylesheet">
+    
+
+</head>
+
+<body>
+	
+<div class="contenedor">
+	<div class="video-contenedor">
+	<div class="overlay"></div>
+	<video autoplay muted loop>
+        <source src="../vid/video_3.mp4" type="video/mp4"> 
+        </video>
+</div>
+
+<header>
+        <a href="../index.html" class="logotipo">PIAA</a>
+
+<nav class="menu">
+        <a href="quienes.html" class="activo">¿Quiénes somos?</a>    
+
+</nav>
+</header>
+
+
+<main>	
+	<h1>PIAA</h1>
+       
+<section class="section">
+     <p>La ciencia avanza, y con ella, la forma en que comprendemos las enfermedades. PIA nace con una misión clara: traducir la complejidad de la investigación científica en información clara, visual e interactiva sobre el asma con componente alérgico. <br>
+<br>
+Diseñado para estudiantes, investigadores y profesionales de la salud, este portal te ofrece una manera de explorar la genómica del asma y entender cómo la medicina personalizada está revolucionando la atención médica. 
+</p>
+	<button class="btn-1">
+	<i>Ver más...</i>
+	</button>    
+</section>
+</main>
+
+
+<footer>
+<nav class="menu-2">
+        <a href="#">Mapa del sitio</a>
+</nav>
+</footer>
+</div>
+
+<!-- Overlay Fullscreen Navigation Menu -->
+<div class="overlay-menu" id="overlayMenu">
+  <span class="close-overlay" onclick="closeOverlay()">&times;</span>
+  <ul>
+    <li><a href="../index.html">Inicio</a></li>
+    <li><a href="#">Asma alérgica</a></li>
+    <li><a href="#">Ómica del Asma</a></li>
+    <li><a href="../herra/herra.html">Herramientas y recursos</a></li>
+    <li><a href="../contacto/contacto.html">Contacto</a></li>
+  </ul>
+</div>
+
+
+    <script>
+	// Mostrar el menú al hacer clic en el botón "Iniciar..."
+  document.querySelector(".btn-1").addEventListener("click", function () {
+    document.getElementById("overlayMenu").classList.add("open");
+  });
+
+  // Función para cerrar el menú
+  function closeOverlay() {
+    document.getElementById("overlayMenu").classList.remove("open");
+  }
+    </script>
+
+</body>
+</html>

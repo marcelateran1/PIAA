@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Página web con información sobre el asma con componente alérgico">
+   
+	<title>PIAA - Portal de Información sobre Asma Alérgica</title>
+    
+<link rel="stylesheet" href="CSS/estilos.css">
+    
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Open+Sans&family=Poppins:wght@900&display=swap" rel="stylesheet">
+    
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
+</head>
+
+<body>
+
+    <!-- Pantalla de Carga -->
+<div class="loading-screen">
+        <div class="ripple"></div>
+        <p class="loading-text">Cargando...</p>
+    </div>
+
+    <!-- Contenido Principal -->
+<div class="contenedor">
+	<div class="video-contenedor">
+        <video autoplay muted loop>
+        <source src="vid/video_1.mp4" type="video/mp4"> 
+        </video>
+</div>
+
+
+<header>
+        <a href="index.html" class="logotipo">PIAA</a>
+
+<nav class="menu">
+        <a href="quienes/quienes.html">¿Quiénes somos?</a>    
+</nav>
+</header>
+
+
+<main>
+	<div class="titulo">
+	<h1>PIAA</h1>
+        <h2>Portal de Información <br> sobre Asma Alérgica</h2>
+</div>
+<section class="section">
+     <p>El portal está destinado principalmente a brindar información 
+     a estudiantes, investigadores y profesionales de la salud 
+     sobre el asma con componente alérgico. Si bien el portal 
+     está abierto al público en general, se recomienda no tomar
+     ninguna decisión médica ni cambiar su comportamiento de 
+     salud basándose en esta información sin hablar con un 
+     médico calificado.</p>
+	<button class="btn-1">
+	<i>Comenzar...</i>
+	</button>    
+</section>
+</main>
+
+
+<footer>
+<nav class="menu-2">
+        <a href="#">Legal</a>
+        <a href="#">Mapa del sitio</a>
+</nav>
+</footer>
+</div>
+
+<!-- Overlay Fullscreen Navigation Menu -->
+<div class="overlay-menu" id="overlayMenu">
+  <span class="close-overlay" onclick="closeOverlay()">&times;</span>
+  <ul>
+    <li><a href="index.html">Inicio</a></li>
+    <li><a href="landasma/lanpag.html">Asma alérgica</a></li>
+    <li><a href="dash/dash.html">Ómica del Asma</a></li>
+    <li><a href="herra/herra.html">Herramientas y recursos</a></li>
+    <li><a href="contacto/contacto.html">Contacto</a></li>
+  </ul>
+</div>
+
+
+    <script>
+        // Oculta la pantalla de carga después de unos segundos y muestra el contenido principal
+setTimeout(() => {
+    	document.querySelector('.loading-screen').style.display = 'none';
+        document.querySelector('.contenedor').style.display = 'flex';
+}, 1500); // (1500 ms = 1 segundo)
+
+// Mostrar el menú al hacer clic en el botón "Iniciar..."
+  document.querySelector(".btn-1").addEventListener("click", function () {
+    document.getElementById("overlayMenu").classList.add("open");
+  });
+
+  // Función para cerrar el menú
+  function closeOverlay() {
+    document.getElementById("overlayMenu").classList.remove("open");
+  }
+    </script>
+</body>
+</html>
