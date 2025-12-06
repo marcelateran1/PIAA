@@ -1,0 +1,388 @@
+/* --- Estilo General para el cuerpo --- */
+*{
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;	
+}
+
+body{
+	background: linear-gradient(to left, #066272, #001110);
+	color: white;
+    	font-family: 'Open Sans', sans-serif;		
+	
+}
+
+/* --- Contenedor Loading screen --- */
+.loading-screen {
+    	display: flex;
+	flex-direction: column;
+    	align-items: center;
+    	justify-content: center;
+       	height: 100vh;
+    	width: 100%;
+	position: fixed;
+    	top: 0;
+    	left: 0;
+ 	background: linear-gradient(135deg, #066272, #001110);
+	z-index: 1000; 
+}
+
+/* --- Contenedor Efecto Ripple --- */
+.ripple {
+    	position: relative;
+    	width: 50px;
+    	height: 50px;
+    	margin-bottom: 10px;	
+}
+
+.ripple::before,
+.ripple::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 4px solid rgb(223, 199, 166); /* Color del Ripple */
+    opacity: 1;
+    animation: rippleAnimation 1.5s ease-out infinite;
+}
+
+.ripple::after {
+    animation-delay: 0.75s;
+}
+
+/* --- Ripple animación --- */
+@keyframes rippleAnimation {
+    0% {
+        transform: scale(0.5); opacity: 1;
+    }
+    100% {
+        transform: scale(2); opacity: 0;
+    }
+}
+
+/* --- Texto Cargando --- */
+.loading-text {
+    font-size: 1.3rem;
+    color: #5d6a76;
+    line-height: 4rem;
+    letter-spacing: 0.08rem;
+    font-weight: 'Bebas Neue';
+}
+
+/* --- Contenedor Principal --- */
+.contenedor{
+  	position: relative;
+	min-height: 100vh;
+	width: 100vw;
+	display: grid;
+	grid-template-rows: auto 1fr auto;
+	align-items: center;	
+	overflow: hidden;
+}
+
+/* --- Video Contenedor --- */
+.video-contenedor video{
+	position: fixed;
+	width: 100%;
+    	height: 100%;
+	object-fit: cover;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	pointer-events: none;	
+	z-index: -2;	
+}
+
+
+/* --- Header y menú --- */
+header{
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	padding: 1.56rem 5%;
+	z-index: 10;
+}
+
+header a.logotipo{
+	text-decoration: none;
+	color: rgb(223, 199, 166);
+	font-size: 1.6em;
+	font-family: 'Bebas Neue', cursive;
+	font-weight: normal;
+}
+
+.logotipo:hover{
+	color: rgb(156, 139, 116);
+}
+
+header .menu{
+	display: flex;
+	gap: 1rem;
+	font-size: 0.9em;
+	font-weight: normal;		
+}
+
+header .menu a{
+	padding-right: 1.2rem;
+	text-decoration: none;
+	letter-spacing: 1px;
+	color: rgb(156, 139, 116);	
+}
+
+header .menu a:hover, header .menu a.activo{
+	color: rgb(223, 199, 166);
+}
+
+/* --- Contenido --- */
+.main-container{
+	position: relative;
+	margin: 0.4em;
+	width: 100%;
+}
+
+.section-container{
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	align-items: center;
+	padding: 2.2rem;
+	gap: 2rem;	
+	margin: 20px 0 0px;
+}
+
+
+h1{
+	font-family: 'Poppins', sans-serif;
+	font-size: clamp(4.9rem, 8vw, 8rem);
+	letter-spacing: 0.4rem;
+	line-height: clamp(4rem, 7vw, 7rem);
+	text-transform: uppercase;
+}
+
+h2{
+	font-family: 'Poppins', sans-serif;
+	font-size: clamp(1.9rem, 3vw, 3rem);
+	letter-spacing: 0.2rem;
+	line-height: clamp(2rem, 3.2vw, 3.2rem);
+	text-transform: uppercase;
+}
+
+
+/* --- Sección --- */
+.section{
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: max(35ch, 26vw);
+	padding: max(0.6rem, 0.7rem);
+	border-right: 1px dotted hsla(34.49999999999997, 16.81%, 53.33%, 1.00);
+	border-left: 1px dotted hsla(34.49999999999997, 16.81%, 53.33%, 1.00);
+	border-radius: 14px;
+}
+
+.section p{
+	font-size: 0.8rem;
+	line-height: clamp(1.1rem, 1.4vw, 1.4rem);
+	font-weight: normal;
+	letter-spacing: 0.04rem;
+	margin-bottom: 1rem;
+	text-align: center;
+	word-break: break-word;			
+}
+
+
+
+/* ---- Menú Cards --- */
+.cards-container {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	gap: 1.2rem;
+	margin-left: 1.2rem;	
+	width: 95%;
+}
+
+.card {
+	position: relative;
+	background: rgba(255, 255, 255, 0.05);
+	backdrop-filter: blur(10px);
+	border: 1px solid rgba(223, 199, 166, 0.2);
+	border-radius: 12px;
+	padding: 1rem;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	transition: all 0.4s ease;
+	min-height: 200px;
+}
+
+.card::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: linear-gradient(135deg, rgba(6, 98, 114, 0.3), rgba(0, 17, 16, 0.3));
+	opacity: 0;
+	transition: opacity 0.4s ease;
+	z-index: 0;
+}
+
+.card:hover::before {
+	opacity: 1;
+}
+
+.card:hover {
+	transform: translateY(-10px);
+	border-color: rgba(223, 199, 166, 0.5);
+	box-shadow: 0 10px 30px rgba(223, 199, 166, 0.2);
+}
+
+.card-icon {
+	width: 60px;
+	height: 60px;
+	background: linear-gradient(135deg, #066272, #001110);
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-bottom: 1rem;
+	font-size: 1.5rem;
+	color: rgb(223, 199, 166);
+	position: relative;
+	z-index: 1;
+	transition: all 0.4s ease;
+}
+
+.card:hover .card-icon {
+	transform: scale(1.1) rotate(5deg);
+	box-shadow: 0 8px 20px rgba(223, 199, 166, 0.3);
+}
+
+.card h3 {
+	font-family: 'Poppins', sans-serif;
+	font-size: 1.1rem;
+	color: #fff;
+	margin-bottom: 0.6rem;
+	letter-spacing: 0.05rem;
+	position: relative;
+	z-index: 1;
+}
+
+.card p {
+	font-size: 0.75rem;
+	line-height: 1.4;
+	color: rgba(255, 255, 255, 0.8);
+	margin-bottom: 1rem;
+	position: relative;
+	z-index: 1;
+}
+
+.card-btn {
+	padding: 0.5rem 1.2rem;
+	background: linear-gradient(150deg, #066272, #001110);
+	color: white;
+	text-decoration: none;
+	border-radius: 8px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	transition: all 0.3s ease;
+	position: relative;
+	z-index: 1;
+	border: 1px solid rgba(223, 199, 166, 0.3);
+}
+
+.card-btn:hover {
+	background: linear-gradient(150deg, #001110, #066272);
+	box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+	transform: scale(1.05);
+	border-color: rgb(223, 199, 166);
+}
+
+
+/* ---- Pie de página --- */
+footer{
+	position: absolute;
+	z-index: 10;
+	bottom: 0;	
+	width: 100%;
+	padding: 0.62rem;
+	display: flex;
+	justify-content: flex-end;
+	font-size: 0.5em;
+	font-weight: normal;
+	color: rgb(156, 139, 116);
+}
+
+footer .menu-2{
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	font-weight: normal;			
+}
+
+footer .menu-2 a{
+	margin-right: 1.5rem;
+	text-decoration: none;
+	letter-spacing: 0.06rem;
+	color: rgb(156, 139, 116);	
+}
+
+footer .menu-2 a:hover{
+	color: rgb(223, 199, 166);
+}
+
+
+@media screen and (max-width: 900px) {
+	.section-container{
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		padding: 2.8rem;	
+		gap: 1.4rem;
+	}
+}	
+
+
+@media screen and (max-width: 750px) {
+	.section-container{
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		padding: 2.8rem;	
+		gap: 1.4rem;
+	}
+
+
+	.titulo{
+		text-align: center;
+	}
+
+	.cards-container {
+		grid-template-columns: 1fr;
+		gap: 1.5rem;
+		padding: 1rem;
+		margin-left: 0;
+	}
+
+	.card {
+		padding: 1.5rem;
+	}
+
+	.card-icon {
+		width: 70px;
+		height: 70px;
+		font-size: 1.8rem;
+	}
+	
+}

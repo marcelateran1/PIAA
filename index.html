@@ -43,12 +43,14 @@
 </header>
 
 
-<main>
+<main class="main-container">
+<section class="section-container">
 	<div class="titulo">
 	<h1>PIAA</h1>
         <h2>Portal de Información <br> sobre Asma Alérgica</h2>
 </div>
-<section class="section">
+
+<div class="section">
      <p>El portal está destinado principalmente a brindar información 
      a estudiantes, investigadores y profesionales de la salud 
      sobre el asma con componente alérgico. Si bien el portal 
@@ -56,32 +58,51 @@
      ninguna decisión médica ni cambiar su comportamiento de 
      salud basándose en esta información sin hablar con un 
      médico calificado.</p>
-	<button class="btn-1">
-	<i>Comenzar...</i>
-	</button>    
+	
+</div>   
 </section>
-</main>
 
+
+<section class="cards-container">
+    <div class="card">
+        <div class="card-icon">
+            <i class="fa fa-heartbeat"></i>
+        </div>
+        <h3>Asma alérgica</h3>
+        <p>Información completa sobre el asma con componente alérgico</p>
+        <a href="landasma/lanpag.html" class="card-btn">Explorar</a>
+    </div>
+
+    <div class="card">
+        <div class="card-icon">
+            <i class="fa fa-bar-chart"></i>
+        </div>
+        <h3>Ómica del Asma Alérgica</h3>
+        <p>Datos y estadísticas relevantes sobre el asma alérgica</p>
+        <a href="dash/dash.html" class="card-btn">Ver Dashboard</a>
+    </div>
+
+    <div class="card">
+        <div class="card-icon">
+            <i class="fa fa-medkit"></i>
+        </div>
+        <h3>Herramientas y recursos</h3>
+        <p>Recursos útiles para profesionales y pacientes</p>
+        <a href="herra/herra.html" class="card-btn">Acceder</a>
+    </div>
+</section>
+
+</main>
 
 <footer>
 <nav class="menu-2">
         <a href="#">Legal</a>
+	<a href="contacto/contacto.html">Contacto</a>
         <a href="#">Mapa del sitio</a>
 </nav>
 </footer>
 </div>
 
-<!-- Overlay Fullscreen Navigation Menu -->
-<div class="overlay-menu" id="overlayMenu">
-  <span class="close-overlay" onclick="closeOverlay()">&times;</span>
-  <ul>
-    <li><a href="index.html">Inicio</a></li>
-    <li><a href="landasma/lanpag.html">Asma alérgica</a></li>
-    <li><a href="dash/dash.html">Ómica del Asma</a></li>
-    <li><a href="herra/herra.html">Herramientas y recursos</a></li>
-    <li><a href="contacto/contacto.html">Contacto</a></li>
-  </ul>
-</div>
 
 
     <script>
@@ -91,15 +112,6 @@ setTimeout(() => {
         document.querySelector('.contenedor').style.display = 'flex';
 }, 1500); // (1500 ms = 1 segundo)
 
-// Mostrar el menú al hacer clic en el botón "Iniciar..."
-  document.querySelector(".btn-1").addEventListener("click", function () {
-    document.getElementById("overlayMenu").classList.add("open");
-  });
-
-  // Función para cerrar el menú
-  function closeOverlay() {
-    document.getElementById("overlayMenu").classList.remove("open");
-  }
     </script>
 </body>
 </html>
