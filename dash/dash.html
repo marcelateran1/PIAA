@@ -42,10 +42,10 @@
 		        <li class="tab-btn">Alergénos</li>
 		        <li class="tab-btn">Vías de señalización</li>
 		        <li class="tab-btn">Biomarcadores</li>
-		        <li class="tab-btn">Farmacogenómica</li>
 	        </ul>
 		</div>
 	</div>
+
 
 
    <!-- Secciones del Dashboard -->
@@ -54,54 +54,134 @@
 	<div class="tab-content">
   		<div class="tab active">
     			<section id="epidemio" class="box">
-      				<h2>Epidemiología</h2>
-      				<p>Consulta la epidemiología asociada al asma alérgica en distintas regiones del mundo.</p>
+					<div class="section-header">
+						<h2>Epidemiología</h2>
+						<p>Panorama de la carga mundial del asma alérgica: tendencias temporales, variación entre regiones y el peso del fenotipo alérgico.</p>
+					</div>
 
-	<!-- Tarjetas resumen -->
-				<div class="epidemio-cards">
-        				<div class="card"><span>Prevalencia global</span><strong>15%</strong></div>
-					<div class="card"><span>Mayor incidencia</span><strong>6–18 años</strong></div>
-					<div class="card"><span>Factores de riesgo</span><strong>Genéticos,<br>ambientales</strong></div>
-					<div class="card"><span>Tendencia</span><strong>Al alza</strong></div>
-				</div>
+	<!-- Gráfico -->
+					<div class="chart-wrapper">
+						<h3>Distribución del asma alérgico por país</h3>
+						<div class="chart-container">
+							<canvas id="epidemioTrendChart"></canvas>
+						</div>
+						<p class="epidemio-chart-note">
+							Fracción de los casos de asma atribuible a sensibilización alérgica (atopia), estimada mediante riesgo atribuible poblacional en estudios nacionales independientes. Los criterios de atopia (prueba cutánea vs. IgE específica) y los grupos de edad difieren entre estudios, por lo que las cifras no son directamente comparables entre sí; se muestran para ilustrar la magnitud de la variación entre países. Fuentes: Weinmayr G et al., <em>Am J Respir Crit Care Med</em>, 2007 (Turquía y China); Cunha SS et al., <em>Rev Panam Salud Publica</em>, 2010 (Brasil); Sunyer J et al., <em>J Allergy Clin Immunol</em>, 2004 (Europa/ECRHS); Wu et al., <em>Sci Rep</em>, 2021 (Taiwán); Arbes SJ et al., <em>J Allergy Clin Immunol</em>, 2007 (Estados Unidos).
+						</p>
+					</div>
 
-	<!-- Gráficos -->
-				<div class="chart-wrapper">
-  					<h3>Distribución por región (%)</h3>
-
-  	<!-- lineal -->
-  					<div class="chart-container">
-    						<canvas id="lineChart"></canvas>
-  					</div>
-
-  	<!-- geográfico -->
-  					<div class="chart-container">
-    						<canvas id="geoChart"></canvas>
-  					</div>
-				</div>
+	<!-- Filtros -->
+					<div class="filter-section">
+						<h3>Filtros</h3>
+						<div class="filters">
+							<select id="epidemioCategoryFilter">
+								<option value="__all__">Todas las categorías</option>
+							</select>
+							<input type="text" id="epidemioSearch" placeholder="Buscar hallazgo, autor o revista...">
+						</div>
+					</div>
 
 	<!-- Tabla -->
-      				<div class="table-wrapper">
-        				<h3>Detalle por región</h3>
-					<div class="table-container">
-         					<table>
-           						<thead>
-              							<tr>
-                						<th>Región</th>
-                						<th>Asma (%)</th>
-                						<th>Asma alérgico (%)</th>
-                						<th>Fuente</th>
-              							</tr>
-            						</thead>
-            						<tbody>
-              							<tr><td>Europa</td><td>9</td><td>7.5</td><td>Global Asthma Report 2022</td></tr>
-              							<tr><td>América del Norte</td><td>10.5</td><td>9.8</td><td>CDC, 2021</td></tr>
-             							<tr><td>América Latina</td><td>12</td><td>10.2</td><td>ISAAC Study</td></tr>
-              							<tr><td>Asia</td><td>6.5</td><td>5.3</td><td>WHO, 2020</td></tr>
-            						</tbody>
-          					</table>
+					<div class="table-wrapper">
+						<h3>Hallazgos clave y referencias bibliográficas</h3>
+						<div class="table-container">
+							<table id="epidemioTable">
+								<thead>
+									<tr>
+										<th>Categoría</th>
+										<th>Hallazgo</th>
+										<th>Fuente</th>
+									</tr>
+								</thead>
+								<tbody><!-- Filas renderizadas por JS --></tbody>
+							</table>
+						</div>
 					</div>
-        			</div>
+
+	<!-- Tabla por continente -->
+					<div class="table-wrapper">
+						<h3>Prevalencia estimada de asma alérgico por continente</h3>
+						<div class="table-container">
+							<table id="epidemioContinentTable">
+								<thead>
+									<tr>
+										<th>Continente</th>
+										<th>Prevalencia general de asma (%)</th>
+										<th>Prevalencia estimada de asma alérgico (%)</th>
+										<th>Referencia bibliográfica</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td class="epidemio-continent-cell">Oceanía</td>
+										<td>8.33</td>
+										<td>4.17 – 6.66</td>
+										<td class="epidemio-continent-ref">
+											Rabe APJ et al. (2023). <em>J Asthma Allergy</em>, 16:1097–1113.<br>
+											<a href="https://doi.org/10.2147/JAA.S418145" target="_blank" rel="noopener">DOI: 10.2147/JAA.S418145</a>
+										</td>
+									</tr>
+									<tr>
+										<td class="epidemio-continent-cell">América del Norte</td>
+										<td>8.29</td>
+										<td>4.15 – 6.63</td>
+										<td class="epidemio-continent-ref">
+											Rabe APJ et al. (2023). <em>J Asthma Allergy</em>, 16:1097–1113.<br>
+											<a href="https://doi.org/10.2147/JAA.S418145" target="_blank" rel="noopener">DOI: 10.2147/JAA.S418145</a>
+										</td>
+									</tr>
+									<tr>
+										<td class="epidemio-continent-cell">Europa</td>
+										<td>5.69</td>
+										<td>2.85 – 4.55</td>
+										<td class="epidemio-continent-ref">
+											Rabe APJ et al. (2023). <em>J Asthma Allergy</em>, 16:1097–1113.<br>
+											<a href="https://doi.org/10.2147/JAA.S418145" target="_blank" rel="noopener">DOI: 10.2147/JAA.S418145</a>
+										</td>
+									</tr>
+									<tr>
+										<td class="epidemio-continent-cell">América del Sur</td>
+										<td>4.90</td>
+										<td>2.45 – 3.92</td>
+										<td class="epidemio-continent-ref">
+											Rabe APJ et al. (2023). <em>J Asthma Allergy</em>, 16:1097–1113.<br>
+											<a href="https://doi.org/10.2147/JAA.S418145" target="_blank" rel="noopener">DOI: 10.2147/JAA.S418145</a>
+										</td>
+									</tr>
+									<tr>
+										<td class="epidemio-continent-cell">África</td>
+										<td>3.67</td>
+										<td>1.84 – 2.94</td>
+										<td class="epidemio-continent-ref">
+											Rabe APJ et al. (2023). <em>J Asthma Allergy</em>, 16:1097–1113.<br>
+											<a href="https://doi.org/10.2147/JAA.S418145" target="_blank" rel="noopener">DOI: 10.2147/JAA.S418145</a>
+										</td>
+									</tr>
+									<tr>
+										<td class="epidemio-continent-cell">Asia</td>
+										<td>3.44</td>
+										<td>1.72 – 2.75</td>
+										<td class="epidemio-continent-ref">
+											Rabe APJ et al. (2023). <em>J Asthma Allergy</em>, 16:1097–1113.<br>
+											<a href="https://doi.org/10.2147/JAA.S418145" target="_blank" rel="noopener">DOI: 10.2147/JAA.S418145</a>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<p class="epidemio-continent-note">
+							La prevalencia general de asma por continente proviene de una revisión de 162 estudios en 69 países (Rabe et al., 2023). El rango de "asma alérgico" se estima aplicando a esa prevalencia general el porcentaje de casos de asma con fenotipo alérgico reportado en la literatura (aproximadamente 50–80% según edad y población), de acuerdo con Custovic A et al., <em>Curr Opin Allergy Clin Immunol</em>, 2024 (PMID: 38359101) y Arbes SJ et al., <em>J Allergy Clin Immunol</em>, 2007. Es una estimación combinada, no una cifra medida directamente por continente.
+						</p>
+					</div>
+
+	<!-- Modal de detalle: hallazgo completo + referencia con PMID/DOI -->
+					<div id="epidemioModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="epidemioModalTitle">
+						<div class="modal-content">
+							<button class="close" aria-label="Cerrar">&times;</button>
+							<h3 id="epidemioModalTitle"></h3>
+							<div id="epidemioModalBody"></div>
+						</div>
+					</div>
       			 </section>
 		</div>
 	</div>
@@ -220,214 +300,180 @@
     				</section>
 			</div>
 
+	
 
-
+	
 	<!-- Alergénos -->
 			<div class="tab">
   				<section id="Alergenos" class="box">
-    					<div class="section-header">
-      						<h2>Alergénos</h2>
-      						<p>Principales alérgenos involucrados en el asma alérgica: su clasificación, características y prevalencia clínica.</p>
+					<div class="section-header">
+						<h2>Alergénos</h2>
+						<p>Principales alérgenos implicados en el desarrollo del asma alérgica: clasificación, fuente de exposición, asociación clínica y distribución geográfica.</p>
+					</div>
 
-			 <!-- Controles de filtrado -->
-        				<div class="alerg-toolbar">
-          					<div class="alerg-inputs">
-            					<label>
-              						Categoría
-              						<select id="filterCategoria">
-                						<option value="__all__">Todas</option>
-              						</select>
-            					</label>
-            					<label>
-              						Asociación
-              						<select id="filterAsociacion">
-                						<option value="__all__">Todas</option>
-                						<option value="Alta">Alta</option>
-                						<option value="Media">Media</option>
-                						<option value="Baja">Baja</option>
-              						</select>
-            					</label>
-            					<label>
-              						Región
-              						<select id="filterRegion">
-                						<option value="__all__">Todas</option>
-              						</select>
-            					</label>
-          					</div>
-          					<div class="alerg-actions">
-            						<input id="filterSearch" type="search" placeholder="Buscar alérgeno o fuente..." />
-            						<button id="btnReset" class="btn-reset"><i class="uil uil-sync"></i> Reset</button>
-          					</div>
-        				</div>
+					<!-- Filtros -->
+					<div class="filter-section">
+						<h3>Filtros</h3>
+						<div class="filters">
+							<select id="alergCategoriaFilter">
+								<option value="__all__">Todas las categorías</option>
+							</select>
+							<select id="alergAsociacionFilter">
+								<option value="__all__">Todas las asociaciones</option>
+								<option value="Alta">Alta</option>
+								<option value="Media">Media</option>
+								<option value="Baja">Baja</option>
+							</select>
+							<select id="alergRegionFilter">
+								<option value="__all__">Todas las regiones</option>
+							</select>
+							<input type="text" id="alergSearch" placeholder="Buscar alérgeno, código o fuente...">
+						</div>
+					</div>
 
-       						<!-- KPIs -->
-        					<div class="alerg-kpis">
-          						<div class="kpi-card">
-            							<div class="kpi-title">Categorías</div>
-            							<div class="kpi-value" id="kpiCategorias">—</div>
-          						</div>
-          						<div class="kpi-card">
-            							<div class="kpi-title">Alérgenos</div>
-            							<div class="kpi-value" id="kpiAlergenos">—</div>
-          						</div>
-          						<div class="kpi-card">
-            							<div class="kpi-title">Exposición media (%)</div>
-            							<div class="kpi-value" id="kpiExposicionMedia">—</div>
-          						</div>
-        					</div>
-
-        					<!-- Gráficos -->
-        					<div class="alerg-grid">
-          						<div class="alerg-card">
-            							<div class="alerg-card-header">
-              							<h3>Exposición promedio por categoría</h3>
-            							</div>
-								<div class="chart-box">
-            							<canvas id="chartExpoPorCategoria"></canvas>
-           							</div>
-							</div>
-
-          						<div class="alerg-card">
-            							<div class="alerg-card-header">
-              							<h3>Distribución de asociación por categoría</h3>
-            							</div>
-								<div class="chart-box">
-            							<canvas id="chartAsociacionPorCategoria"></canvas>
-          							</div>
-							</div>	
-
-          						<div class="alerg-card">
-            							<div class="alerg-card-header">
-              							<h3>Top 8 alérgenos por exposición</h3>
-              							<small id="subTopN">(según filtros activos)</small>
-            							</div>
-								<div class="chart-box">
-            							<canvas id="chartTopAlergenos"></canvas>
-          							</div>
-        						</div>
+					<!-- Tabla de alérgenos -->
+					<div class="table-wrapper">
+						<h3>Alérgenos relevantes en asma alérgica</h3>
+						<div class="table-container">
+							<table id="alergTable">
+								<thead>
+									<tr>
+										<th>Categoría</th>
+										<th>Alérgeno</th>
+										<th>Fuente</th>
+										<th>Asociación</th>
+										<th>Regiones</th>
+									</tr>
+								</thead>
+								<tbody><!-- Filas renderizadas por JS --></tbody>
+							</table>
 						</div>
 
-        					<!-- Tabla -->
-        					<div class="alerg-table-wrap">
-							<h3 class="alerg-table-title">Alérgenos</h3>
-          						<table id="alergTable">
-            							<thead>
-              								<tr>
-                							<th>Categoría</th>
-                							<th>Alérgeno</th>
-                							<th>Fuente</th>
-                							<th>Asociación</th>
-                							<th>Exposición (%)</th>
-                							<th>Regiones</th>
-                							<th>Referencia</th>
-              								</tr>
-            							</thead>
-            							<tbody>
-              							<!-- Rows renderizadas por JS -->
-            							</tbody>
-          						</table>
-        					</div>
+						<!-- Paginación -->
+						<div class="pagination">
+							<button id="alergPrevPage" class="pager-btn" aria-label="Página anterior">
+								<i class="uil uil-arrow-left"></i>
+							</button>
+							<span id="alergPageInfo" class="page-info">1 / 1</span>
+							<button id="alergNextPage" class="pager-btn" aria-label="Página siguiente">
+								<i class="uil uil-arrow-right"></i>
+							</button>
+						</div>
+					</div>
 
-        					<!-- Aviso -->
-        					<div class="alerg-hint">
-          
-        					</div>
-
-    				</section>
+					<!-- Modal de detalle: descripción, relevancia clínica, bases de datos y referencia bibliográfica -->
+					<div id="alergenoModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="alergModalTitle">
+						<div class="modal-content">
+							<button class="close" aria-label="Cerrar">&times;</button>
+							<h3 id="alergModalTitle"></h3>
+							<div id="alergModalBody"></div>
+						</div>
+					</div>
+				</section>
      			</div>
 
     					
 
-
       <!-- ... VÍAS DE SEÑALIZACIÓN ... -->
 
     		<div class="tab">
-      <section id="vias-seña" class="box">
+      <section id="vias-señalizacion" class="box">
         <div class="pathways-container">
-          <div class="pathways-header">
+          <div class="section-header">
             <h2>Vías de Señalización</h2>
-            <p>Explora las principales vías moleculares involucradas en el asma alérgico.</p>
+            <p>Explora las principales vías moleculares implicadas en la fisiopatología del asma alérgica.</p>
+          </div>
 
-            <!-- Controles -->
-            <div class="search-controls">
-              <div class="filter-controls">
-                <select id="pathway-filter">
-                  <option value="all">Todas las vías</option>
-                  <option value="cytokine">Citocinas</option>
-                  <option value="immune">Sistema inmune</option>
-                  <option value="inflammatory">Inflamatorias</option>
-                  <option value="other">Otras</option>
-                </select>
-              </div>
-              <div class="search-bar">
-                <i class="uil uil-search"></i>
-                <input id="pathway-search" type="search" placeholder="Buscar vía, componente, efecto…">
-              </div>
+          <!-- Filtros -->
+          <div class="filter-section">
+            <h3>Filtros</h3>
+            <div class="filters">
+              <select id="pathway-filter">
+                <option value="all">Todas las categorías</option>
+                <option value="cytokine">Citocinas</option>
+                <option value="immune">Sistema inmune</option>
+                <option value="inflammatory">Inflamatorias</option>
+                <option value="other">Otras</option>
+              </select>
+              <input type="text" id="pathway-search" placeholder="Buscar vía, componente, efecto...">
             </div>
           </div>
 
-          <!-- KPIs (sin íconos) -->
-          <div class="pathways-stats">
-            <div class="stat-card">
-              <div class="stat-info">
-                <h4 id="kpiVias">—</h4>
-                <p>Vías detectadas</p>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-info">
-                <h4 id="kpiComponentes">—</h4>
-                <p>Componentes únicos</p>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-info">
-                <h4 id="kpiCategorias">—</h4>
-                <p>Categorías</p>
-              </div>
+          <!-- Tabla de vías -->
+          <div class="table-wrapper">
+            <h3>Vías de Señalización</h3>
+            <div class="table-container">
+              <table id="pathwaysTable">
+                <thead>
+                  <tr>
+                    <th>Vía</th>
+                    <th>Componentes clave</th>
+                    <th>Efecto biológico</th>
+                  </tr>
+                </thead>
+                <tbody><!-- Filas renderizadas por JS --></tbody>
+              </table>
             </div>
           </div>
+        </div>
 
-          <!-- Gráficos -->
-          <div class="pathway-charts">
-            <div class="chart-card">
-              <div class="chart-header">
-                <h3>Vías por categoría</h3>
-              </div>
-              <div class="chart-box"><canvas id="chartPathwayCategorias"></canvas></div>
-            </div>
-
-            <div class="chart-card">
-              <div class="chart-header">
-                <h3>Top componentes</h3>
-                <small id="topCompMeta">(según filtros activos)</small>
-              </div>
-              <div class="chart-box"><canvas id="chartTopComponentes"></canvas></div>
-            </div>
+        <!-- Modal de detalle: descripción, componentes, referencia bibliográfica y bases de datos -->
+        <div id="pathwayModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="pathwayModalTitle">
+          <div class="modal-content">
+            <button class="close" aria-label="Cerrar">&times;</button>
+            <h3 id="pathwayModalTitle"></h3>
+            <div id="pathwayModalBody"></div>
           </div>
-
-          <!-- Grid de tarjetas (información completa visible) -->
-          <div class="pathways-grid" id="pathways-grid"></div>
-
         </div>
       </section>
     </div>
 
 
-	<!-- ... otras secciones se mantienen ... -->
+	<!-- ... BIOMARCADORES ... -->
 
 	<div class="tab">
     	<section id="biomarcadores" class="box">
-        	<h2>Biomarcadores</h2>
-        	<p>Información sobre biomarcadores en asma.</p>
-       	</section>
- 	</div>
+        	<div class="section-header">
+        		<h2>Biomarcadores</h2>
+        		<p>Explora los biomarcadores clínicos utilizados para el diagnóstico, fenotipado y seguimiento terapéutico del asma alérgica.</p>
+        	</div>
 
-	<!-- Farmacogenómica -->
-	<div class="tab">
-    	<section id="farmacogenomica" class="box">
-        	<h2>Farmacogenómica</h2>
-        	<p>Genes candidatos farmacogenéticos en asma.</p>
+        	<!-- Filtros -->
+        	<div class="filter-section">
+        		<h3>Filtros</h3>
+        		<div class="filters">
+        			<select id="biomSampleFilter">
+        				<option value="">Todos los tipos de muestra</option>
+        			</select>
+        			<input type="text" id="biomSearch" placeholder="Buscar biomarcador..." />
+        		</div>
+        	</div>
+
+        	<!-- Tabla de biomarcadores -->
+        	<div class="table-wrapper">
+        		<h3>Biomarcadores</h3>
+        		<div class="table-container">
+        			<table id="biomarkTable">
+        				<thead>
+        					<tr>
+        						<th>Biomarcador</th>
+        						<th>Nombre completo</th>
+        						<th>Tipo de muestra</th>
+        					</tr>
+        				</thead>
+        				<tbody><!-- Filas renderizadas por JS --></tbody>
+        			</table>
+        		</div>
+        	</div>
+
+        	<!-- Modal de detalle -->
+        	<div id="biomarkerModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="biomModalTitle">
+        		<div class="modal-content">
+        			<button class="close" aria-label="Cerrar">&times;</button>
+        			<h3 id="biomModalTitle"></h3>
+        			<div id="biomModalBody"></div>
+        		</div>
+        	</div>
        	</section>
  	</div>
 
