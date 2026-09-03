@@ -73,11 +73,7 @@ const tab_Nav = function(tabBtnClick){
 	setTimeout(() => {
 		const activeTab = tabs[tabBtnClick];
 		if (activeTab) {
-			// Verificar si contiene gráficos de vías de señalización
-			if (activeTab.id === "vias-señalizacion" || activeTab.querySelector("#vias-señalizacion")) {
-				ensurePathwayCharts();
-			}
-			// Disparar evento resize para gráficos de Chart.js
+			// Disparar evento resize para gráficos de Chart.js de otras secciones
 			window.dispatchEvent(new Event('resize'));
 		}
 	}, 100);
@@ -89,102 +85,265 @@ if (tabBtns.length > 0) {
 
 
 // =================== EPIDEMIOLOGÍA ===================
-document.addEventListener('DOMContentLoaded', function() {
-	// Verificar si Chart.js está disponible
-	if (typeof Chart === 'undefined') {
-		console.warn('Chart.js no está disponible');
+// Datos embebidos: fracción (%) de los casos de asma atribuible a sensibilización
+// alérgica (atopia), por país, según estudios poblacionales independientes.
+// Cada país usa una definición de atopia y un grupo de edad distintos (ver notas
+// en cada fuente); se listan de menor a mayor fracción atribuible.
+const EPIDEMIO_COUNTRY_DISTRIBUTION = {
+	labels: ['Turquía (Ankara)', 'Brasil', 'Europa (ECRHS, 13 países)', 'Taiwán', 'Estados Unidos', 'China (Guangzhou)'],
+	values: [0, 24.5, 30, 50.4, 56.3, 93.8],
+	sources: [
+		'Weinmayr G et al., 2007 (ISAAC Fase II, niños 8–12 años)',
+		'Cunha SS et al., 2010 (Salvador, niños)',
+		'Sunyer J et al., 2004 (ECRHS, adultos)',
+		'Wu et al. / estudio PATCH, 2021 (niños y adolescentes)',
+		'Arbes SJ et al., 2007 (NHANES III, todas las edades)',
+		'Weinmayr G et al., 2007 (ISAAC Fase II, niños 8–12 años)'
+	]
+};
+
+// Hallazgos clave con referencia bibliográfica (PMID/DOI)
+const EPIDEMIO_CATEGORY_LABELS = {
+	"carga-global": "Carga global",
+	"variacion-regional": "Variación regional",
+	"tendencias-temporales": "Tendencias temporales",
+	"fenotipo-alergico": "Fenotipo alérgico"
+};
+
+const EPIDEMIO_FINDINGS = [
+	{
+		id: "gbd2021",
+		category: "carga-global",
+		title: "La carga mundial del asma sigue creciendo, aunque su prevalencia ajustada disminuye",
+		detail: "El estudio de Carga Global de Enfermedad (GBD) 2021 estimó la prevalencia, incidencia, mortalidad y años de vida ajustados por discapacidad (DALY) de asma y dermatitis atópica en 204 países y territorios entre 1990 y 2021, con proyecciones hasta 2050. El número absoluto de personas afectadas continúa en aumento, principalmente por el crecimiento poblacional, mientras que la prevalencia estandarizada por edad muestra una tendencia decreciente a nivel global.",
+		study: { authors: "GBD 2021 Asthma and Allergic Diseases Collaborators", year: "2025", journal: "The Lancet Respiratory Medicine", vol: "13(5):425–446", pmid: "40147466", doi: "10.1016/S2213-2600(25)00003-7" }
+	},
+	{
+		id: "shin2023",
+		category: "variacion-regional",
+		title: "Los países con mayor desarrollo socioeconómico concentran más casos, pero menor mortalidad",
+		detail: "Un análisis del estudio de Carga Global de Enfermedad (GBD 2019) sobre trastornos alérgicos en 204 países encontró que las regiones con mayor índice sociodemográfico (SDI) presentan una prevalencia de asma más alta, pero una mortalidad y morbilidad asociadas más bajas que las regiones de menor SDI, un patrón que probablemente refleja diferencias en el acceso a diagnóstico y tratamiento.",
+		study: { authors: "Shin YH, Hwang J, Kwon R, et al.", year: "2023", journal: "Allergy", vol: "78(8):2232–2254", pmid: "37431853", doi: "10.1111/all.15807" }
+	},
+	{
+		id: "pearce2007",
+		category: "tendencias-temporales",
+		title: "Entre 1993 y 2003 la prevalencia de sibilancias evolucionó de forma distinta según la región",
+		detail: "Al repetir la encuesta ISAAC entre 5 y 10 años después (Fase I → Fase III) en más de 500.000 niños y adolescentes de decenas de países, la prevalencia media de sibilancias en el último año cambió muy poco a nivel global, pero con patrones regionales opuestos: aumentó en África, América Latina y partes de Asia, mientras se mantuvo estable o disminuyó ligeramente en varios países de ingresos altos. El gráfico de esta sección resume ese cambio anual por región.",
+		study: { authors: "Pearce N, Aït-Khaled N, Beasley R, et al.", year: "2007", journal: "Thorax", vol: "62(9):758–766", pmid: "17504817", doi: "10.1136/thx.2006.070169" }
+	},
+	{
+		id: "lai2009",
+		category: "variacion-regional",
+		title: "Existen diferencias de hasta 40 veces en la prevalencia de sibilancias entre países",
+		detail: "La Fase Tres de ISAAC, con cerca de 1,2 millones de niños y adolescentes de 97 países, encontró que la prevalencia de sibilancias en el último año variaba entre 0,8% (Tíbet, China) y 32,6% (Wellington, Nueva Zelanda) en adolescentes de 13-14 años, y entre 2,4% (Jodhpur, India) y 37,6% (Costa Rica) en niños de 6-7 años. Los síntomas de asma tendieron a ser más frecuentes en países de ingresos altos, pero más graves en los de ingresos más bajos.",
+		study: { authors: "Lai CKW, Beasley R, Crane J, et al.", year: "2009", journal: "Thorax", vol: "64(6):476–483", pmid: "", doi: "10.1136/thx.2008.106609" }
+	},
+	{
+		id: "asher2021",
+		category: "tendencias-temporales",
+		title: "En un seguimiento de 27 años, más niños y adolescentes reportaron haber tenido asma alguna vez",
+		detail: "El estudio Global Asthma Network (GAN) Fase I, que comparó datos de 119.795 participantes en 27 centros de 14 países frente a ISAAC (1993-2020), halló que la prevalencia de sibilancias actuales disminuyó en países de bajos ingresos, aumentó en países de ingresos medios-bajos y se mantuvo estable en los de ingresos medios-altos y altos. En paralelo, la proporción de quienes reportaron haber tenido asma alguna vez aumentó de forma sostenida en casi todos los grupos.",
+		study: { authors: "Asher MI, Rutter CE, Bissell K, et al.", year: "2021", journal: "The Lancet", vol: "398(10311):1569–1580", pmid: "34755626", doi: "10.1016/S0140-6736(21)01450-1" }
+	},
+	{
+		id: "custovic2024",
+		category: "fenotipo-alergico",
+		title: "El fenotipo alérgico sigue siendo el más frecuente, pero es clínicamente heterogéneo",
+		detail: "Revisiones recientes sobre sensibilización alérgica infantil y su relación con el asma muestran que, aunque la sensibilización a aeroalérgenos sigue siendo el mecanismo dominante en el asma pediátrica, no toda sensibilización por IgE tiene relevancia clínica. El uso de diagnóstico molecular (component-resolved diagnostics) permite distinguir subtipos de sensibilización realmente asociados a síntomas de aquellos que no lo están, abriendo camino a un fenotipado más preciso.",
+		study: { authors: "Custovic A, Custovic D, Fontanella S.", year: "2024", journal: "Current Opinion in Allergy and Clinical Immunology", vol: "24(2):79–87", pmid: "38359101", doi: "10.1097/ACI.0000000000000967" }
+	}
+];
+
+let EPIDEMIO_FILTERED = [];
+
+// =================== Gráfico de distribución por país ===================
+function renderEpidemioChart(){
+	const canvas = document.getElementById('epidemioTrendChart');
+	if (!canvas || typeof Chart === 'undefined') return;
+
+	new Chart(canvas.getContext('2d'), {
+		type: 'line',
+		data: {
+			labels: EPIDEMIO_COUNTRY_DISTRIBUTION.labels,
+			datasets: [{
+				label: 'Fracción de asma atribuible a atopia (%)',
+				data: EPIDEMIO_COUNTRY_DISTRIBUTION.values,
+				fill: true,
+				tension: 0.35,
+				backgroundColor: 'rgba(91, 133, 255, 0.15)',
+				borderColor: 'rgba(91, 133, 255, 1)',
+				pointBackgroundColor: '#5b85ff',
+				pointHoverBackgroundColor: '#ff6b6b',
+				pointBorderColor: '#fff',
+				pointRadius: 6,
+				pointHoverRadius: 8
+			}]
+		},
+		options: {
+			responsive: true,
+			maintainAspectRatio: false,
+			scales: {
+				y: {
+					min: 0,
+					max: 100,
+					title: { display: true, text: '% de casos de asma atribuible a atopia', color: '#fff' },
+					ticks: { color: '#fff' },
+					grid: { color: 'rgba(255,255,255,0.1)' }
+				},
+				x: {
+					ticks: { color: '#fff', maxRotation: 30, minRotation: 10 },
+					grid: { color: 'rgba(255,255,255,0.06)' }
+				}
+			},
+			plugins: {
+				legend: { display: false },
+				tooltip: {
+					backgroundColor: '#2e2e41',
+					titleColor: '#fff',
+					bodyColor: '#fff',
+					callbacks: {
+						afterLabel: (ctx) => EPIDEMIO_COUNTRY_DISTRIBUTION.sources[ctx.dataIndex] || ''
+					}
+				}
+			}
+		}
+	});
+}
+
+// =================== Tabla de hallazgos ===================
+function renderEpidemioTable(rows){
+	const tbody = document.querySelector("#epidemioTable tbody");
+	if (!tbody) return;
+	tbody.innerHTML = "";
+
+	if (rows.length === 0){
+		tbody.innerHTML = `<tr class="epidemio-empty-row"><td colspan="3">No se encontraron hallazgos con los filtros seleccionados.</td></tr>`;
 		return;
 	}
 
-// --Gráfico Lineal--
+	rows.forEach(f => {
+		const tr = document.createElement("tr");
+		tr.innerHTML = `
+			<td class="epidemio-category-cell">${EPIDEMIO_CATEGORY_LABELS[f.category]}</td>
+			<td class="epidemio-finding-cell"><button type="button" class="epidemio-name-link" data-id="${f.id}">${f.title}</button></td>
+			<td class="epidemio-source-cell">${f.study.authors} (${f.study.year})<br><em>${f.study.journal}</em></td>
+		`;
+		tbody.appendChild(tr);
+	});
 
-const lineChartCanvas = document.getElementById('lineChart');
-	if (lineChartCanvas) {
-		const ctxLine = lineChartCanvas.getContext('2d');
-		new Chart(ctxLine, {
-			type: 'line',
-			data: {
-				labels: ['América', 'Europa', 'África', 'Asia', 'Oceanía', 'Tal'],
-				datasets: [{
-					label: 'Distribución por región (%)',
-					data: [12, 9, 24, 8, 10, 6],
-					fill: true,
-					tension: 0.4,
-					backgroundColor: 'rgba(91, 133, 255, 0.1)',
-					borderColor: 'rgba(91, 133, 255, 1)',
-					pointBackgroundColor: '#5b85ff',
-					pointBorderColor: '#fff',
-					pointRadius: 5,
-				}]
-			},
-			options: {
-				responsive: true,
-				maintainAspectRatio: false,
-				scales: {
-					y: {
-						beginAtZero: true,
-						ticks: { color: '#fff' },
-						grid: { color: 'rgba(255,255,255,0.1)' }
-					},
-					x: {
-						ticks: { color: '#fff' },
-						grid: { color: 'rgba(255,255,255,0.1)' }
-					}
-				},
-				plugins: {
-					legend: { labels: { color: '#fff' } },
-					tooltip: {
-						backgroundColor: '#2e2e41',
-						titleColor: '#fff',
-						bodyColor: '#fff'
-					}
-				}
-			}
-		});
+	tbody.querySelectorAll(".epidemio-name-link").forEach(btn => {
+		btn.addEventListener("click", () => showEpidemioDetails(btn.getAttribute("data-id")));
+	});
+}
+
+// =================== Filtros + búsqueda ===================
+function applyEpidemioFilters(){
+	const search = document.getElementById("epidemioSearch");
+	const categoryFilter = document.getElementById("epidemioCategoryFilter");
+
+	const q = search ? search.value.trim().toLowerCase() : "";
+	const category = categoryFilter ? categoryFilter.value : "__all__";
+
+	EPIDEMIO_FILTERED = EPIDEMIO_FINDINGS.filter(f => {
+		const matchesCategory = category === "__all__" || f.category === category;
+		const matchesQ = !q
+			|| f.title.toLowerCase().includes(q)
+			|| f.study.authors.toLowerCase().includes(q)
+			|| f.study.journal.toLowerCase().includes(q);
+		return matchesCategory && matchesQ;
+	});
+
+	renderEpidemioTable(EPIDEMIO_FILTERED);
+}
+
+function populateEpidemioSelects(){
+	const categoryFilter = document.getElementById("epidemioCategoryFilter");
+	if (!categoryFilter) return;
+
+	Object.entries(EPIDEMIO_CATEGORY_LABELS).forEach(([key, label]) => {
+		const opt = document.createElement("option");
+		opt.value = key;
+		opt.textContent = label;
+		categoryFilter.appendChild(opt);
+	});
+}
+
+// =================== Modal de detalle ===================
+function showEpidemioDetails(id){
+	const f = EPIDEMIO_FINDINGS.find(x => x.id === id);
+	const modal = document.getElementById("epidemioModal");
+	const modalTitle = document.getElementById("epidemioModalTitle");
+	const modalBody = document.getElementById("epidemioModalBody");
+
+	if (!f || !modal || !modalTitle || !modalBody) return;
+
+	modalTitle.textContent = f.title;
+
+	modalBody.innerHTML = `
+		<div class="gene-card">
+			<div class="gene-card-header">
+				<i class="uil uil-chart-line"></i>
+				<div>
+					<span class="gene-tag">${EPIDEMIO_CATEGORY_LABELS[f.category]}</span>
+					<span class="gene-subtitle">Hallazgo epidemiológico</span>
+				</div>
+			</div>
+			<p class="gene-card-text">${f.detail}</p>
+
+			<div class="epidemio-ref-block">
+				<h4 class="modal-section-title" style="margin:0 0 8px 0; font-size:1.05rem; color:#e9eefc;">Referencia bibliográfica</h4>
+				<ul class="gene-card-list gene-card-list--compact">
+					<li>
+						<strong>${f.study.authors}</strong> (${f.study.year}). <em>${f.study.journal}</em>. ${f.study.vol}.<br>
+						<span class="gene-chip-label">${literatureId(f.study)}</span>
+						— <a href="${literatureLink(f.study)}" target="_blank" rel="noopener">Ver publicación</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	`;
+
+	// Igual que en Genética/Biomarcadores: el modal se posiciona dentro de la
+	// sección (no tapa el tab-nav-bar) pero su fondo debe cubrir toda la sección,
+	// incluida la tabla, aunque sea más alta que un viewport.
+	const section = document.getElementById("epidemio");
+	modal.style.minHeight = section ? section.scrollHeight + "px" : "100vh";
+
+	modal.style.display = "block";
+}
+
+function closeEpidemioModal(){
+	const modal = document.getElementById("epidemioModal");
+	if (modal) {
+		modal.style.display = "none";
+		modal.style.minHeight = "";
 	}
+}
 
-// --Gráfico Geográfico--
+// =================== Inicialización de Epidemiología ===================
+document.addEventListener('DOMContentLoaded', function() {
+	if (!document.getElementById("epidemio")) return;
 
-const geoChartCanvas = document.getElementById('geoChart');
-	if (geoChartCanvas) {
-		const ctxGeo = geoChartCanvas.getContext('2d');
-		new Chart(ctxGeo, {
-			type: 'bar',
-			data: {
-				labels: ['Norteamérica', 'Sudamérica', 'Europa', 'África', 'Asia', 'Oceanía'],
-				datasets: [{
-					label: 'Prevalencia (%)',
-					data: [10.5, 12, 9, 24, 8, 10],
-					backgroundColor: [
-						'#1f77b4', '#2ca02c', '#ff7f0e', '#d62728', '#9467bd', '#8c564b'
-					],
-					borderRadius: 6
-				}]
-			},
-			options: {
-				indexAxis: 'y',
-				responsive: true,
-				maintainAspectRatio: false,
-				scales: {
-					x: {
-						beginAtZero: true,
-						ticks: { color: '#fff' },
-						grid: { color: 'rgba(255,255,255,0.1)' }
-					},
-					y: {
-						ticks: { color: '#fff' },
-						grid: { color: 'rgba(255,255,255,0.1)' }
-					}
-				},
-				plugins: {
-					legend: { display: false },
-					tooltip: {
-						backgroundColor: '#2e2e41',
-						titleColor: '#fff',
-						bodyColor: '#fff'
-					}
-				}
-			}
+	renderEpidemioChart();
+
+	populateEpidemioSelects();
+	EPIDEMIO_FILTERED = [...EPIDEMIO_FINDINGS];
+	renderEpidemioTable(EPIDEMIO_FILTERED);
+
+	const search = document.getElementById("epidemioSearch");
+	const categoryFilter = document.getElementById("epidemioCategoryFilter");
+
+	if (search) search.addEventListener("input", debounce(applyEpidemioFilters, 150));
+	if (categoryFilter) categoryFilter.addEventListener("change", applyEpidemioFilters);
+
+	// Modal - cierre
+	const modal = document.getElementById("epidemioModal");
+	if (modal) {
+		const closeBtn = modal.querySelector(".close");
+		if (closeBtn) closeBtn.addEventListener("click", closeEpidemioModal);
+		modal.addEventListener("click", (event) => {
+			if (event.target === modal) closeEpidemioModal();
 		});
 	}
 });
@@ -989,413 +1148,716 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 // =================== ALÉRGENOS ===================
-const ALERG_DATA = [
-  // Ácaros
-  {Categoria:'Ácaros del polvo', Alergeno:'Dermatophagoides pteronyssinus', Fuente:'Colchones, ropa de cama', Asociacion:'Alta', Exposicion:82, Regiones:'América, Europa, Asia', Referencia:'WAO, 2022'},
-  {Categoria:'Ácaros del polvo', Alergeno:'Dermatophagoides farinae', Fuente:'Polvo doméstico', Asociacion:'Alta', Exposicion:78, Regiones:'América, Asia', Referencia:'WAO, 2022'},
-  {Categoria:'Ácaros del polvo', Alergeno:'Blomia tropicalis', Fuente:'Ambientes húmedos', Asociacion:'Media', Exposicion:55, Regiones:'Latinoamérica, Sudeste Asiático', Referencia:'Revisión regional'},
+// Etiquetas de categoría (para insignias y filtros)
+const ALERG_CATEGORY_LABELS = {
+	acaros: "Ácaros del polvo",
+	hongos: "Hongos",
+	polen: "Polen",
+	animales: "Animales",
+	cucarachas: "Cucarachas",
+	latex: "Látex"
+};
 
-  // Hongos
-  {Categoria:'Hongos', Alergeno:'Alternaria alternata', Fuente:'Aire exterior (verano/otoño)', Asociacion:'Media', Exposicion:33, Regiones:'Regiones templadas', Referencia:'Bush & Prochnau, 2004'},
-  {Categoria:'Hongos', Alergeno:'Cladosporium herbarum', Fuente:'Aire exterior', Asociacion:'Baja', Exposicion:20, Regiones:'Europa, América del Norte', Referencia:'D’Amato et al., 2007'},
+// Construye un enlace de búsqueda a PubMed a partir de autores/año/tema (no se inventan PMID)
+function allergenPubmedLink(ref){
+	const term = ref.term || `${ref.authors} ${ref.year}`;
+	return `https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(term)}`;
+}
 
-  // Polen
-  {Categoria:'Polen', Alergeno:'Betula pendula', Fuente:'Árboles (abedul)', Asociacion:'Alta', Exposicion:41, Regiones:'Europa, Norteamérica', Referencia:'D’Amato et al., 2007'},
-  {Categoria:'Polen', Alergeno:'Lolium perenne', Fuente:'Gramíneas', Asociacion:'Alta', Exposicion:48, Regiones:'Europa, Oceanía', Referencia:'Revisión gramíneas'},
-  {Categoria:'Polen', Alergeno:'Ambrosia artemisiifolia', Fuente:'Herbáceas (ambrosía)', Asociacion:'Alta', Exposicion:45, Regiones:'América del Norte, Europa', Referencia:'Revisión ambrosía'},
+// Enlaces a bases de datos especializadas en alérgenos, construidos a partir del código de nomenclatura y el nombre científico
+function allergenDatabaseLinks(code, name){
+	return [
+		{
+			label: "Allergen Nomenclature (WHO/IUIS)",
+			description: "Base de datos oficial de nomenclatura de alérgenos, con la clasificación y familia proteica del alérgeno.",
+			url: `http://www.allergen.org/search.php?allergenname=${encodeURIComponent(code)}`
+		},
+		{
+			label: "UniProt",
+			description: "Secuencia, dominios funcionales y estructura de la proteína alergénica.",
+			url: `https://www.uniprot.org/uniprotkb?query=${encodeURIComponent(code)}`
+		}
+	];
+}
 
-  // Animales
-  {Categoria:'Animales', Alergeno:'Fel d 1 (Gato)', Fuente:'Caspa, saliva', Asociacion:'Alta', Exposicion:60, Regiones:'Global', Referencia:'Revisión felinos'},
-  {Categoria:'Animales', Alergeno:'Can f 1 (Perro)', Fuente:'Caspa, saliva', Asociacion:'Media', Exposicion:37, Regiones:'Global', Referencia:'Revisión caninos'},
-
-  // Cucarachas
-  {Categoria:'Cucarachas', Alergeno:'Bla g 1 (Blattella germanica)', Fuente:'Restos y excretas', Asociacion:'Media', Exposicion:34, Regiones:'Zonas urbanas', Referencia:'Estudios urbanos'},
-  {Categoria:'Cucarachas', Alergeno:'Per a 1 (Periplaneta americana)', Fuente:'Restos y excretas', Asociacion:'Media', Exposicion:29, Regiones:'Zonas urbanas', Referencia:'Estudios urbanos'},
-
-  // Látex (ocupacional/entornos clínicos)
-  {Categoria:'Látex', Alergeno:'Hev b 5', Fuente:'Guantes de látex', Asociacion:'Baja', Exposicion:10, Regiones:'Centros de salud', Referencia:'Revisión látex'},
-
-  // Polvo/Moho interior
-  {Categoria:'Hongos', Alergeno:'Aspergillus fumigatus', Fuente:'Ambientes interiores húmedos', Asociacion:'Media', Exposicion:22, Regiones:'Global', Referencia:'Revisión aspergillus'}
+// Datos embebidos: alérgenos relevantes en el desarrollo del asma alérgica
+const ALLERGENS = [
+	{
+		id: "der-p",
+		category: "acaros",
+		name: "Dermatophagoides pteronyssinus",
+		code: "Der p 1",
+		source: "Colchones, ropa de cama, alfombras",
+		association: "Alta",
+		exposure: 82,
+		regions: "América, Europa, Asia",
+		description: "Ácaro del polvo doméstico predominante en climas templados y húmedos. Der p 1 es una cisteín-proteasa que altera las uniones estrechas del epitelio bronquial, facilitando la penetración de otros alérgenos y activando directamente receptores tipo PAR-2 en la vía aérea.",
+		relevance: "Es el aeroalérgeno perenne más frecuentemente implicado en la sensibilización de pacientes con asma alérgica a nivel mundial; su exposición sostenida se asocia con inflamación T2 persistente.",
+		reference: { authors: "Calderón MA, Linneberg A, Kleine-Tebbe J, et al.", year: "2015", journal: "J Allergy Clin Immunol", term: "house dust mite respiratory allergy asthma" }
+	},
+	{
+		id: "der-f",
+		category: "acaros",
+		name: "Dermatophagoides farinae",
+		code: "Der f 1",
+		source: "Polvo doméstico, textiles",
+		association: "Alta",
+		exposure: 78,
+		regions: "América, Asia",
+		description: "Ácaro del polvo doméstico con amplia reactividad cruzada con Der p 1. Su alérgeno mayor, Der f 1, comparte función de cisteín-proteasa y contribuye a la disrupción de la barrera epitelial bronquial.",
+		relevance: "Predomina en climas más secos que Der pteronyssinus; su cosensibilización con Der p 1 es habitual y complica la interpretación de pruebas cutáneas individuales.",
+		reference: { authors: "Calderón MA, Linneberg A, Kleine-Tebbe J, et al.", year: "2015", journal: "J Allergy Clin Immunol", term: "Dermatophagoides farinae allergen asthma" }
+	},
+	{
+		id: "blo-t",
+		category: "acaros",
+		name: "Blomia tropicalis",
+		code: "Blo t 5",
+		source: "Ambientes húmedos, zonas tropicales",
+		association: "Media",
+		exposure: 55,
+		regions: "Latinoamérica, Sudeste asiático",
+		description: "Ácaro de almacenamiento con amplia distribución en regiones tropicales y subtropicales. Blo t 5 tiene baja homología estructural con los alérgenos de Dermatophagoides, por lo que se comporta como una fuente de sensibilización parcialmente independiente.",
+		relevance: "En regiones tropicales puede ser una fuente de sensibilización tan relevante como los ácaros del género Dermatophagoides, por lo que su inclusión en paneles diagnósticos regionales es importante.",
+		reference: { authors: "Fernández-Caldas E, Puerta L, Caraballo L.", year: "2007", journal: "Clin Rev Allergy Immunol", term: "Blomia tropicalis allergen asthma" }
+	},
+	{
+		id: "alt-a",
+		category: "hongos",
+		name: "Alternaria alternata",
+		code: "Alt a 1",
+		source: "Aire exterior (verano y otoño)",
+		association: "Media",
+		exposure: 33,
+		regions: "Regiones templadas",
+		description: "Hongo filamentoso ambiental cuyas esporas alcanzan concentraciones máximas en climas cálidos y secos. Alt a 1 es una proteína única del reino fúngico, sin homología con proteínas humanas conocidas, lo que favorece su alta inmunogenicidad.",
+		relevance: "La sensibilización a Alternaria se asocia consistentemente con asma más grave, mayor riesgo de exacerbaciones y de paro respiratorio súbito ligado a tormentas eléctricas (asma por tormenta).",
+		reference: { authors: "Bush RK, Prochnau JJ.", year: "2004", journal: "J Allergy Clin Immunol", term: "Alternaria allergen asthma severity" }
+	},
+	{
+		id: "cla-h",
+		category: "hongos",
+		name: "Cladosporium herbarum",
+		code: "Cla h 1",
+		source: "Aire exterior, vegetación en descomposición",
+		association: "Baja",
+		exposure: 20,
+		regions: "Europa, América del Norte",
+		description: "Uno de los hongos con mayor concentración de esporas en el aire exterior a nivel mundial. Su alérgeno mayor, Cla h 1, pertenece a la familia de las proteínas dependientes del ácido asártico (aspártico proteasas).",
+		relevance: "Aunque su prevalencia de sensibilización es menor que la de Alternaria, contribuye a la carga alergénica estacional total, especialmente en climas templados-húmedos.",
+		reference: { authors: "Simon-Nobbe B, Denk U, Poll V, et al.", year: "2008", journal: "Int Arch Allergy Immunol", term: "Cladosporium fungal allergen asthma" }
+	},
+	{
+		id: "asp-f",
+		category: "hongos",
+		name: "Aspergillus fumigatus",
+		code: "Asp f 1",
+		source: "Ambientes interiores húmedos",
+		association: "Media",
+		exposure: 22,
+		regions: "Global",
+		description: "Hongo ubicuo capaz de colonizar la vía aérea, además de actuar como fuente alergénica. Asp f 1 es una ribotoxina con actividad citotóxica directa sobre el epitelio respiratorio.",
+		relevance: "Su sensibilización se relaciona con fenotipos de asma grave, incluida la aspergilosis broncopulmonar alérgica (ABPA), y con mayor deterioro de la función pulmonar a largo plazo.",
+		reference: { authors: "Denning DW, O'Driscoll BR, Hogaboam CM, et al.", year: "2006", journal: "Eur Respir J", term: "Aspergillus fumigatus severe asthma sensitization" }
+	},
+	{
+		id: "bet-v",
+		category: "polen",
+		name: "Betula pendula (abedul)",
+		code: "Bet v 1",
+		source: "Polen de árboles, floración primaveral",
+		association: "Alta",
+		exposure: 41,
+		regions: "Europa, Norteamérica",
+		description: "Alérgeno mayor del polen de abedul, miembro de la familia PR-10, con amplia reactividad cruzada frente a alérgenos alimentarios (síndrome polen-alimento). Su liberación es estacional, concentrada en primavera.",
+		relevance: "Es uno de los alérgenos de polen arbóreo más relevantes en el hemisferio norte y un desencadenante frecuente de exacerbaciones estacionales de asma alérgica.",
+		reference: { authors: "D'Amato G, Cecchi L, Bonini S, et al.", year: "2007", journal: "Allergy", term: "tree pollen allergy asthma climate" }
+	},
+	{
+		id: "lol-p",
+		category: "polen",
+		name: "Lolium perenne (gramíneas)",
+		code: "Lol p 1",
+		source: "Polen de gramíneas, campos y parques",
+		association: "Alta",
+		exposure: 48,
+		regions: "Europa, Oceanía",
+		description: "Alérgeno mayor del polen de gramíneas, con estructura de expansina de pared celular. Las gramíneas liberan grandes cantidades de polen en periodos cálidos, generando picos de exposición ambiental muy elevados.",
+		relevance: "El polen de gramíneas es la causa más común de rinitis y asma estacional en muchas regiones templadas, con fuerte correlación entre recuentos polínicos y consultas de urgencia por asma.",
+		reference: { authors: "D'Amato G, Cecchi L, Bonini S, et al.", year: "2007", journal: "Allergy", term: "grass pollen allergy asthma" }
+	},
+	{
+		id: "amb-a",
+		category: "polen",
+		name: "Ambrosia artemisiifolia (ambrosía)",
+		code: "Amb a 1",
+		source: "Polen de herbáceas, floración de fin de verano",
+		association: "Alta",
+		exposure: 45,
+		regions: "América del Norte, Europa",
+		description: "Alérgeno mayor del polen de ambrosía, una pectato-liasa con altísima capacidad inmunogénica. Su temporada de polinización se está prolongando en varias regiones por efecto del cambio climático.",
+		relevance: "Es uno de los alérgenos de mayor impacto en la carga alergénica de fin de verano/otoño y un modelo frecuentemente citado del efecto del cambio climático sobre la prevalencia de asma alérgica.",
+		reference: { authors: "D'Amato G, Cecchi L, Bonini S, et al.", year: "2007", journal: "Allergy", term: "ragweed pollen allergy asthma" }
+	},
+	{
+		id: "fel-d",
+		category: "animales",
+		name: "Felis catus (gato)",
+		code: "Fel d 1",
+		source: "Caspa, saliva, glándulas sebáceas",
+		association: "Alta",
+		exposure: 60,
+		regions: "Global",
+		description: "Alérgeno mayor del gato doméstico, una uteroglobina secretada en glándulas sebáceas y salivales. Por su tamaño reducido y adherencia electrostática, permanece suspendido en el aire y se dispersa fácilmente en ambientes sin exposición directa al animal (colegios, transporte público).",
+		relevance: "La exposición puede persistir meses en el hogar tras retirar al animal; se asocia con sensibilización de alta prevalencia incluso en personas sin contacto directo con gatos.",
+		reference: { authors: "Konradsen JR, Fujisawa T, van Hage M, et al.", year: "2015", journal: "J Allergy Clin Immunol", term: "cat allergen Fel d 1 asthma" }
+	},
+	{
+		id: "can-f",
+		category: "animales",
+		name: "Canis familiaris (perro)",
+		code: "Can f 1",
+		source: "Caspa, saliva, pelo",
+		association: "Media",
+		exposure: 37,
+		regions: "Global",
+		description: "Alérgeno mayor del perro doméstico, perteneciente a la familia de las lipocalinas. Existe variabilidad significativa en la producción alergénica entre razas e individuos, sin que exista una raza verdaderamente 'hipoalergénica'.",
+		relevance: "Es una fuente relevante de sensibilización en el ámbito doméstico y ocupacional (veterinaria), con impacto directo sobre el control del asma en hogares con mascotas.",
+		reference: { authors: "Konradsen JR, Fujisawa T, van Hage M, et al.", year: "2015", journal: "J Allergy Clin Immunol", term: "dog allergen furry animal asthma" }
+	},
+	{
+		id: "bla-g",
+		category: "cucarachas",
+		name: "Blattella germanica",
+		code: "Bla g 1",
+		source: "Restos corporales, saliva y excretas",
+		association: "Media",
+		exposure: 34,
+		regions: "Zonas urbanas",
+		description: "Cucaracha común en ambientes urbanos con infraestructura deficiente. Sus alérgenos se acumulan en el polvo doméstico y son un componente central del fenotipo de 'asma del interior de la ciudad' (inner-city asthma).",
+		relevance: "La exposición a alérgenos de cucaracha en viviendas urbanas se asocia con mayor morbilidad de asma infantil, especialmente en poblaciones de bajos recursos con alta densidad de infestación.",
+		reference: { authors: "Pomés A, Mueller GA, Randall TA, et al.", year: "2017", journal: "Curr Allergy Asthma Rep", term: "cockroach allergen inner-city asthma" }
+	},
+	{
+		id: "per-a",
+		category: "cucarachas",
+		name: "Periplaneta americana",
+		code: "Per a 1",
+		source: "Restos corporales, saliva y excretas",
+		association: "Media",
+		exposure: 29,
+		regions: "Zonas urbanas",
+		description: "Especie de cucaracha de mayor tamaño, frecuente en climas cálidos y sistemas de alcantarillado urbano. Comparte reactividad cruzada parcial con Blattella germanica a través de tropomiosinas conservadas.",
+		relevance: "Contribuye a la carga alergénica doméstica en zonas urbanas de clima cálido, con relevancia particular en poblaciones expuestas a infraestructura sanitaria deficiente.",
+		reference: { authors: "Pomés A, Mueller GA, Randall TA, et al.", year: "2017", journal: "Curr Allergy Asthma Rep", term: "cockroach allergen asthma" }
+	},
+	{
+		id: "hev-b",
+		category: "latex",
+		name: "Hevea brasiliensis (látex natural)",
+		code: "Hev b 5",
+		source: "Guantes y dispositivos de látex",
+		association: "Baja",
+		exposure: 10,
+		regions: "Centros de salud (exposición ocupacional)",
+		description: "Alérgeno del látex natural de caucho, relevante principalmente en el ámbito ocupacional sanitario. Hev b 5 es una proteína ácida de estructura similar a proteínas estructurales vegetales, con reactividad cruzada frente a algunos alimentos (síndrome látex-fruta).",
+		relevance: "Su asociación con asma ocupacional se limita fundamentalmente a personal de salud con exposición repetida por vía inhalatoria al polvo de los guantes de látex empolvados.",
+		reference: { authors: "Wagner S, Breiteneder H.", year: "2002", journal: "Biochem Soc Trans", term: "latex allergy Hevea brasiliensis occupational asthma" }
+	}
 ];
 
-// Estado y referencias a gráficos
-let FILTERED = [];
-let allergenCharts = { expoCat: null, assocCat: null, top: null };
+// Pre-calcula los enlaces a bases de datos para cada alérgeno
+ALLERGENS.forEach(a => { a.databases = allergenDatabaseLinks(a.code, a.name); });
+
+// Estado de filtros
+let ALERG_FILTERED = [];
+let alergCurrentPage = 1;
+const ALERG_PAGE_SIZE = 10;
 
 // Helpers
-const unique = (arr) => Array.from(new Set(arr));
-const splitRegions = (str) => !str ? [] : String(str).split(',').map(s => s.trim()).filter(Boolean);
+const alergUnique = (arr) => Array.from(new Set(arr));
+const alergSplitRegions = (str) => !str ? [] : String(str).split(',').map(s => s.trim()).filter(Boolean);
+const alergAssocClass = (assoc) => String(assoc || '').toLowerCase();
 
-// Render KPIs
-function renderKPIs(rows){
-	const kpiCategorias = document.getElementById('kpiCategorias');
-	const kpiAlergenos = document.getElementById('kpiAlergenos');
-	const kpiExposicionMedia = document.getElementById('kpiExposicionMedia');
-	
-	if (!kpiCategorias || !kpiAlergenos || !kpiExposicionMedia) return;
-	
-	const catCount = unique(rows.map(r => r.Categoria)).length;
-	const alergCount = rows.length;
-	const expos = rows.map(r => r.Exposicion).filter(v => typeof v === 'number');
-	const avg = expos.length ? (expos.reduce((a,b)=>a+b,0)/expos.length) : 0;
-	
-	kpiCategorias.textContent = catCount;
-	kpiAlergenos.textContent = alergCount;
-	kpiExposicionMedia.textContent = avg.toFixed(1);
+// =================== Paginación ===================
+function getAlergPagedData(){
+	const start = (alergCurrentPage - 1) * ALERG_PAGE_SIZE;
+	return ALERG_FILTERED.slice(start, start + ALERG_PAGE_SIZE);
 }
 
-// Render Tabla
-function renderTable(rows){
+function updateAlergPager(){
+	const totalPages = Math.max(1, Math.ceil(ALERG_FILTERED.length / ALERG_PAGE_SIZE));
+	const prev = document.getElementById("alergPrevPage");
+	const next = document.getElementById("alergNextPage");
+	const info = document.getElementById("alergPageInfo");
+
+	if (prev) prev.disabled = alergCurrentPage <= 1;
+	if (next) next.disabled = alergCurrentPage >= totalPages;
+	if (info) info.textContent = `${alergCurrentPage} / ${totalPages}`;
+}
+
+// =================== Tabla (nombre clicable → modal de detalle) ===================
+function renderAllergensTable(rows){
 	const tbody = document.querySelector('#alergTable tbody');
 	if (!tbody) return;
-	
-	tbody.innerHTML = '';
-	const frag = document.createDocumentFragment();
-	rows.forEach(r => {
-		const tr = document.createElement('tr');
-		tr.innerHTML = `
-			<td>${r.Categoria}</td>
-			<td>${r.Alergeno}</td>
-			<td>${r.Fuente}</td>
-			<td>${r.Asociacion}</td>
-			<td>${(r.Exposicion ?? '').toString()}</td>
-			<td>${r.Regiones}</td>
-			<td>${r.Referencia}</td>
-		`;
-		frag.appendChild(tr);
-	});
-	tbody.appendChild(frag);
-}
 
-// Render Charts
-function renderCharts(rows){
-	if (typeof Chart === 'undefined') return;
-
-  // limpiar previos
-  const destroy = (c) => { if(c && c.destroy) c.destroy(); };
-	destroy(allergenCharts.expoCat); 
-	destroy(allergenCharts.assocCat); 
-	destroy(allergenCharts.top);
-
-	// Exposición promedio por categoría
-	const byCat = {};
-	rows.forEach(r => {
-		if(typeof r.Exposicion === 'number'){
-			if(!byCat[r.Categoria]) byCat[r.Categoria] = [];
-			byCat[r.Categoria].push(r.Exposicion);
-		}
-	});
-	const catLabels = Object.keys(byCat);
-	const catMeans = catLabels.map(k => {
-		const arr = byCat[k]; 
-		return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0;
-	});
-	
-	const ctx1 = document.getElementById('chartExpoPorCategoria');
-	if (ctx1) {
-		allergenCharts.expoCat = new Chart(ctx1.getContext('2d'), {
-			type: 'bar',
-			data: { labels: catLabels, datasets: [{ label: 'Exposición promedio (%)', data: catMeans }] },
-			options: {
-				responsive: true, maintainAspectRatio: false,
-				scales: { y: { beginAtZero: true, title: { display: true, text: '%' } } },
-				plugins: { legend: { display: false } }
-			}
-		});
+	if (!rows.length) {
+		tbody.innerHTML = `<tr class="alerg-empty-row"><td colspan="5">No se encontraron alérgenos con los filtros seleccionados.</td></tr>`;
+		updateAlergPager();
+		return;
 	}
 
-  // Distribución de asociación por categoría (apilado)
-  const assocLevels = ['Alta', 'Media', 'Baja'];
-  const catSet = unique(rows.map(r => r.Categoria));
-  const countMatrix = assocLevels.map(level => 
-    catSet.map(cat => rows.filter(r => r.Categoria === cat && r.Asociacion === level).length)
-  );
+	tbody.innerHTML = rows.map(a => `
+		<tr>
+			<td>${ALERG_CATEGORY_LABELS[a.category]}</td>
+			<td class="alerg-name-cell">
+				<button type="button" class="alerg-name-link" data-id="${a.id}">${a.name}</button>
+				<span class="alerg-code">${a.code}</span>
+			</td>
+			<td>${a.source}</td>
+			<td>${a.association}</td>
+			<td>${a.regions}</td>
+		</tr>
+	`).join("");
 
-  const ctx2 = document.getElementById('chartAsociacionPorCategoria');
-	if (ctx2) {
-		allergenCharts.assocCat = new Chart(ctx2.getContext('2d'), {
-			type: 'bar',
-			data: {
-				labels: catSet,
-				datasets: assocLevels.map((level, idx) => ({
-					label: level, data: countMatrix[idx], stack: 'assoc'
-				}))
-			},
-			options: {
-				responsive: true, maintainAspectRatio: false,
-				scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Conteo' } } }
-			}
-		});
-	}
-
-  // Top 8 por exposición
-  const rowsWithExpo = rows.filter(r => typeof r.Exposicion === 'number');
-	const top = rowsWithExpo.sort((a,b)=> b.Exposicion - a.Exposicion).slice(0, 8);
-	const subTopN = document.getElementById('subTopN');
-	if (subTopN) subTopN.textContent = `(según filtros activos: ${top.length})`;
-	
-	const ctx3 = document.getElementById('chartTopAlergenos');
-	if (ctx3) {
-		allergenCharts.top = new Chart(ctx3.getContext('2d'), {
-			type: 'bar',
-			data: { labels: top.map(r => r.Alergeno), datasets: [{ label: 'Exposición (%)', data: top.map(r => r.Exposicion) }] },
-			options: {
-				indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-				scales: { x: { beginAtZero: true, title: { display: true, text: '%' } } },
-				plugins: { legend: { display: false } }
-			}
-		});
-	}
-}
-
-// Filtros de alérgenos
-function applyFilters(){
-	const filterCategoria = document.getElementById('filterCategoria');
-	const filterAsociacion = document.getElementById('filterAsociacion');
-	const filterRegion = document.getElementById('filterRegion');
-	const filterSearch = document.getElementById('filterSearch');
-	
-	const cat = filterCategoria ? filterCategoria.value : '__all__';
-	const assoc = filterAsociacion ? filterAsociacion.value : '__all__';
-	const reg = filterRegion ? filterRegion.value : '__all__';
-	const q = filterSearch ? filterSearch.value.trim().toLowerCase() : '';
-
-	FILTERED = ALERG_DATA.filter(r => {
-		const catOk = (cat === '__all__') || (r.Categoria === cat);
-		const assocOk = (assoc === '__all__') || (r.Asociacion === assoc);
-		const regOk = (reg === '__all__') || splitRegions(r.Regiones).some(rr => rr.toLowerCase().includes(reg.toLowerCase()));
-		const qOk = !q || [r.Alergeno, r.Fuente, r.Categoria, r.Regiones].some(v => String(v).toLowerCase().includes(q));
-		return catOk && assocOk && regOk && qOk;
+	tbody.querySelectorAll(".alerg-name-link").forEach(btn => {
+		btn.addEventListener("click", () => showAllergenDetails(btn.getAttribute("data-id")));
 	});
 
-	renderKPIs(FILTERED);
-	renderTable(FILTERED);
-	renderCharts(FILTERED);
+	updateAlergPager();
 }
 
-function resetFilters(){
-	const filterCategoria = document.getElementById('filterCategoria');
-	const filterAsociacion = document.getElementById('filterAsociacion');
-	const filterRegion = document.getElementById('filterRegion');
-	const filterSearch = document.getElementById('filterSearch');
-	
-	if (filterCategoria) filterCategoria.value = '__all__';
-	if (filterAsociacion) filterAsociacion.value = '__all__';
-	if (filterRegion) filterRegion.value = '__all__';
-	if (filterSearch) filterSearch.value = '';
-	applyFilters();
+// =================== Modal de detalle (descripción, bases de datos y referencia bibliográfica) ===================
+function showAllergenDetails(id){
+	const a = ALLERGENS.find(x => x.id === id);
+	const modal = document.getElementById("alergenoModal");
+	const modalTitle = document.getElementById("alergModalTitle");
+	const modalBody = document.getElementById("alergModalBody");
+
+	if (!a || !modal || !modalTitle || !modalBody) return;
+
+	modalTitle.textContent = `${a.name} (${a.code})`;
+
+	const dbHTML = a.databases.map(d => `
+		<li>
+			<strong>${d.label}</strong>
+			<span class="alerg-db-desc">${d.description}</span><br>
+			<a href="${d.url}" target="_blank" rel="noopener">Consultar en ${d.label}</a>
+		</li>
+	`).join("");
+
+	modalBody.innerHTML = `
+		<div class="alerg-modal-grid">
+			<div class="gene-card alerg-card-funcion">
+				<div class="gene-card-header">
+					<i class="uil uil-leaf"></i>
+					<div>
+						<span class="gene-tag">Descripción del alérgeno</span>
+						<span class="gene-subtitle">Origen, mecanismo y relevancia clínica</span>
+					</div>
+				</div>
+				<div class="alerg-modal-meta">
+					<span class="alerg-badge ${a.category}">${ALERG_CATEGORY_LABELS[a.category]}</span>
+					<span class="alerg-assoc ${alergAssocClass(a.association)}">Asociación ${a.association}</span>
+					<span class="alerg-chip"><span class="alerg-chip-label">Exposición:</span> <span class="alerg-chip-value">${a.exposure}%</span></span>
+					<span class="alerg-chip"><span class="alerg-chip-label">Regiones:</span> <span class="alerg-chip-value">${a.regions}</span></span>
+				</div>
+				<p class="gene-card-text"><strong>Fuente de exposición:</strong> ${a.source}</p>
+				<p class="gene-card-text">${a.description}</p>
+				<h4 class="biomark-subhead">Relevancia clínica</h4>
+				<p class="gene-card-text">${a.relevance}</p>
+			</div>
+
+			<div class="gene-card alerg-card-db">
+				<div class="gene-card-header">
+					<i class="uil uil-database"></i>
+					<div>
+						<span class="gene-tag">Bases de datos a consultar</span>
+					</div>
+				</div>
+				<ul class="gene-card-list gene-card-list--compact">
+					${dbHTML}
+				</ul>
+			</div>
+
+			<div class="gene-card alerg-card-ref">
+				<div class="gene-card-header">
+					<i class="uil uil-book-open"></i>
+					<div>
+						<span class="gene-tag">Referencia bibliográfica</span>
+					</div>
+				</div>
+				<ul class="gene-card-list gene-card-list--compact">
+					<li>
+						<a href="${allergenPubmedLink(a.reference)}" target="_blank" rel="noopener">Buscar en PubMed</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	`;
+
+	modal.style.display = "block";
 }
 
-// Inicializa selects con datos embebidos
-function populateSelects(data){
-	const selCat = document.getElementById('filterCategoria');
-	const selReg = document.getElementById('filterRegion');
-	
+function closeAllergenModal(){
+	const modal = document.getElementById("alergenoModal");
+	if (modal) modal.style.display = "none";
+}
+
+// =================== Filtros + búsqueda ===================
+function populateAllergenSelects(){
+	const selCat = document.getElementById("alergCategoriaFilter");
+	const selReg = document.getElementById("alergRegionFilter");
+
 	if (selCat) {
-		unique(data.map(d => d.Categoria)).forEach(v => {
-			const opt = document.createElement('option'); 
-			opt.value = v; 
-			opt.textContent = v; 
+		alergUnique(ALLERGENS.map(a => a.category)).forEach(cat => {
+			const opt = document.createElement("option");
+			opt.value = cat;
+			opt.textContent = ALERG_CATEGORY_LABELS[cat] || cat;
 			selCat.appendChild(opt);
 		});
 	}
-	
+
 	if (selReg) {
-		const allRegs = unique(data.flatMap(d => splitRegions(d.Regiones)));
+		const allRegs = alergUnique(ALLERGENS.flatMap(a => alergSplitRegions(a.regions)));
 		allRegs.forEach(v => {
-			const opt = document.createElement('option'); 
-			opt.value = v; 
-			opt.textContent = v; 
+			const opt = document.createElement("option");
+			opt.value = v;
+			opt.textContent = v;
 			selReg.appendChild(opt);
 		});
 	}
 }
 
-// Eventos de filtros
-function bindFilterEvents(){
-	const filterCategoria = document.getElementById('filterCategoria');
-	const filterAsociacion = document.getElementById('filterAsociacion');
-	const filterRegion = document.getElementById('filterRegion');
-	const filterSearch = document.getElementById('filterSearch');
-	const btnReset = document.getElementById('btnReset');
-	
-	if (filterCategoria) filterCategoria.addEventListener('change', applyFilters);
-	if (filterAsociacion) filterAsociacion.addEventListener('change', applyFilters);
-	if (filterRegion) filterRegion.addEventListener('change', applyFilters);
-	if (filterSearch) {
-		filterSearch.addEventListener('input', () => {
-			clearTimeout(window.__alergDebounce);
-			window.__alergDebounce = setTimeout(applyFilters, 150);
-		});
-	}
-	if (btnReset) btnReset.addEventListener('click', resetFilters);
+function applyAllergenFilters(){
+	const catFilter = document.getElementById("alergCategoriaFilter");
+	const assocFilter = document.getElementById("alergAsociacionFilter");
+	const regFilter = document.getElementById("alergRegionFilter");
+	const search = document.getElementById("alergSearch");
+
+	const cat = catFilter ? catFilter.value : "__all__";
+	const assoc = assocFilter ? assocFilter.value : "__all__";
+	const reg = regFilter ? regFilter.value : "__all__";
+	const q = search ? search.value.trim().toLowerCase() : "";
+
+	ALERG_FILTERED = ALLERGENS.filter(a => {
+		const catOk = (cat === "__all__") || (a.category === cat);
+		const assocOk = (assoc === "__all__") || (a.association === assoc);
+		const regOk = (reg === "__all__") || alergSplitRegions(a.regions).some(r => r.toLowerCase().includes(reg.toLowerCase()));
+		const qOk = !q || [a.name, a.code, a.source, a.regions].some(v => String(v).toLowerCase().includes(q));
+		return catOk && assocOk && regOk && qOk;
+	});
+
+	alergCurrentPage = 1;
+	renderAllergensTable(getAlergPagedData());
 }
 
-// Inicialización de alérgenos
-document.addEventListener('DOMContentLoaded', function() {
-	bindFilterEvents();
-	populateSelects(ALERG_DATA);
-	resetFilters(); // render inicial con datos embebidos
+// ================ Inicialización de Alergénos ================
+document.addEventListener("DOMContentLoaded", () => {
+	if (!document.getElementById("alergTable")) return;
+
+	populateAllergenSelects();
+	ALERG_FILTERED = [...ALLERGENS];
+	alergCurrentPage = 1;
+
+	renderAllergensTable(getAlergPagedData());
+
+	const catFilter = document.getElementById("alergCategoriaFilter");
+	const assocFilter = document.getElementById("alergAsociacionFilter");
+	const regFilter = document.getElementById("alergRegionFilter");
+	const search = document.getElementById("alergSearch");
+
+	if (catFilter) catFilter.addEventListener("change", applyAllergenFilters);
+	if (assocFilter) assocFilter.addEventListener("change", applyAllergenFilters);
+	if (regFilter) regFilter.addEventListener("change", applyAllergenFilters);
+	if (search) {
+		search.addEventListener("input", () => {
+			clearTimeout(window.__alergDebounce);
+			window.__alergDebounce = setTimeout(applyAllergenFilters, 150);
+		});
+	}
+
+	// Paginación
+	const alergPrev = document.getElementById("alergPrevPage");
+	const alergNext = document.getElementById("alergNextPage");
+
+	if (alergPrev) {
+		alergPrev.addEventListener("click", () => {
+			if (alergCurrentPage > 1) {
+				alergCurrentPage--;
+				renderAllergensTable(getAlergPagedData());
+			}
+		});
+	}
+
+	if (alergNext) {
+		alergNext.addEventListener("click", () => {
+			const totalPages = Math.max(1, Math.ceil(ALERG_FILTERED.length / ALERG_PAGE_SIZE));
+			if (alergCurrentPage < totalPages) {
+				alergCurrentPage++;
+				renderAllergensTable(getAlergPagedData());
+			}
+		});
+	}
+
+	// Modal de detalle - cierre
+	const modal = document.getElementById("alergenoModal");
+	if (modal) {
+		const closeBtn = modal.querySelector(".close");
+		if (closeBtn) closeBtn.addEventListener("click", closeAllergenModal);
+		modal.addEventListener("click", (event) => {
+			if (event.target === modal) closeAllergenModal();
+		});
+	}
 });
 
 
 
 // =================== VÍAS DE SEÑALIZACIÓN ===================
-// Datos embebidos
+// Etiquetas de categoría (para insignias, gráficos y filtros)
+const PATHWAY_CATEGORY_LABELS = {
+	cytokine: "Citocinas",
+	immune: "Sistema inmune",
+	inflammatory: "Inflamatorias",
+	other: "Otras"
+};
+
+// Construye un enlace de búsqueda a PubMed a partir de autores/año/tema (no se inventan PMID)
+function pathwayPubmedLink(ref){
+	const term = ref.term || `${ref.authors} ${ref.year}`;
+	return `https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(term)}`;
+}
+
+// Enlaces a bases de datos especializadas, construidos a partir de los componentes clave de la vía.
+// "overrides" permite fijar un enlace directo y específico para una base de datos puntual (p. ej. la página exacta de un WPID en WikiPathways).
+function pathwayDatabaseLinks(components, overrides = {}){
+	const list = Array.isArray(components) ? components : [];
+	const textTerm = list.join(" "); // término de búsqueda para WikiPathways / PathCards / Reactome
+	const stringIds = list.map(c => encodeURIComponent(c)).join("%0d"); // identificadores para la red de STRING
+
+	return [
+		{
+			label: "WikiPathways",
+			description: "Diagrama colaborativo de la vía con los genes, proteínas y metabolitos que la componen.",
+			url: overrides.WikiPathways || `https://www.wikipathways.org/search.html?query=${encodeURIComponent(textTerm)}`
+		},
+		{
+			label: "PathCards",
+			description: "Ficha unificada de la vía (SuperPath) que agrupa fuentes como Reactome, KEGG y WikiPathways.",
+			url: overrides.PathCards || `https://pathcards.genecards.org/Search/Results?q=${encodeURIComponent(list[0] || textTerm)}`
+		},
+		{
+			label: "STRING",
+			description: "Red de interacción proteína-proteína entre los componentes clave de la vía.",
+			url: overrides.STRING || `https://string-db.org/cgi/network?identifiers=${stringIds}&species=9606`
+		},
+		{
+			label: "Reactome",
+			description: "Base de datos de vías biológicas revisada por expertos, con representación molecular detallada de cada paso.",
+			url: overrides.Reactome || `https://reactome.org/content/query?q=${encodeURIComponent(textTerm)}`
+		}
+	];
+}
+
+// Datos embebidos: vías moleculares relevantes en asma alérgica
 const PATHWAYS = [
-  { name:"Vía IL-4/IL-13", components:["IL-4","IL-13","STAT6","JAK1","JAK3"], category:"cytokine", effect:"Diferenciación Th2, aumento de IgE, producción de moco.", reference:"Wills-Karp et al., 2010" },
-  { name:"TSLP", components:["TSLP","TSLPR","JAK","STAT"], category:"immune", effect:"Activa células dendríticas, promueve inflamación tipo 2.", reference:"Ziegler & Artis, 2010" },
-  { name:"IL-5", components:["IL-5","IL-5R","JAK/STAT"], category:"cytokine", effect:"Supervivencia y activación de eosinófilos.", reference:"Foster et al., 2011" },
-  { name:"IL-33/ST2", components:["IL-33","ST2","NF-κB"], category:"immune", effect:"Activación de ILC2 y potenciación de respuesta alérgica.", reference:"Schmitz et al., 2005" },
-  { name:"NF-κB", components:["NF-κB","IκB","IKK"], category:"inflammatory", effect:"Transcripción de genes pro-inflamatorios.", reference:"Barnes, 2006" },
-  { name:"NLRP3 Inflamasoma", components:["NLRP3","ASC","Caspasa-1","IL-1β"], category:"inflammatory", effect:"Maduración de IL-1β; inflamación de la vía aérea.", reference:"Schroder & Tschopp, 2010" },
-  { name:"IgE–FcεRI", components:["IgE","FcεRI","Syk","Lyn"], category:"immune", effect:"Degranulación mastocitaria, liberación de histamina.", reference:"Galli et al., 2008" },
-  { name:"Leucotrienos", components:["5-LOX","LTC4","LTD4","LTE4","CysLT1"], category:"inflammatory", effect:"Broncoconstricción y aumento de permeabilidad.", reference:"Peters-Golden & Henderson, 2007" },
-  { name:"TGF-β Remodelado", components:["TGF-β","SMAD2/3","SMAD4"], category:"other", effect:"Fibrosis y remodelado de la vía aérea.", reference:"Halwani et al., 2011" },
-  { name:"IL-17", components:["IL-17A","IL-17F","ACT1","NF-κB"], category:"inflammatory", effect:"Inflamación neutrofílica, esteroide-resistente en algunos fenotipos.", reference:"Newcomb & Peebles, 2013" }
+	{
+		id: "il4-il13",
+		name: "Vía IL-4/IL-13",
+		category: "cytokine",
+		components: ["IL-4", "IL-13", "IL-4Rα", "STAT6", "JAK1", "JAK3"],
+		effect: "Diferenciación Th2, aumento de IgE, producción de moco.",
+		description: "IL-4 e IL-13 comparten el receptor IL-4Rα y señalizan a través de JAK1/JAK3 y el factor de transcripción STAT6. Esta vía dirige la diferenciación de linfocitos Th2, el cambio de isotipo a IgE en linfocitos B, la hiperplasia de células caliciformes y la hipersecreción de moco, siendo el eje central de la inflamación tipo 2 en el asma alérgica.",
+		reference: { authors: "Wills-Karp M, Finkelman FD", year: "2008", journal: "Sci Signal", term: "IL-4 IL-13 STAT6 asthma signaling" },
+	},
+	{
+		id: "tslp",
+		name: "TSLP",
+		category: "immune",
+		components: ["TSLP", "TSLPR", "IL-7Rα", "JAK1/2", "STAT5"],
+		effect: "Activa células dendríticas, promueve inflamación tipo 2.",
+		description: "La linfopoyetina estromal tímica (TSLP) es liberada por el epitelio bronquial dañado y actúa como una alarmina 'maestra': activa células dendríticas e ILC2, amplificando la respuesta Th2 río arriba de IL-4, IL-5 e IL-13. Es diana de terapias biológicas dirigidas al epitelio (p. ej., tezepelumab).",
+		reference: { authors: "Ziegler SF, Artis D", year: "2010", journal: "Nat Immunol", term: "TSLP thymic stromal lymphopoietin asthma" },
+		dbOverrides: { WikiPathways: "https://www.wikipathways.org/pathways/WP3191.html" }
+	},
+	{
+		id: "il5",
+		name: "Vía IL-5",
+		category: "cytokine",
+		components: ["IL-5", "IL-5Rα", "βc", "JAK2", "STAT5"],
+		effect: "Supervivencia y activación de eosinófilos.",
+		description: "IL-5 se une a IL-5Rα junto a la cadena común βc, activando JAK2/STAT5. Regula la diferenciación en médula ósea, la supervivencia y la activación efectora de los eosinófilos, siendo la diana directa de terapias anti-IL-5/IL-5R como mepolizumab y benralizumab.",
+		reference: { authors: "Foster PS, Hogan SP", year: "2011", journal: "Immunol Rev", term: "IL-5 eosinophil asthma signaling" },
+		dbOverrides: { WikiPathways: "https://www.wikipathways.org/pathways/WP968.html" }
+	},
+	{
+		id: "il33-st2",
+		name: "IL-33/ST2",
+		category: "immune",
+		components: ["IL-33", "ST2 (IL1RL1)", "IL1RAP", "MyD88", "NF-κB"],
+		effect: "Activación de ILC2 y potenciación de respuesta alérgica.",
+		description: "IL-33 es liberada por el epitelio ante daño o alérgenos y se une al receptor ST2, señalizando vía MyD88 hacia NF-κB. Activa potentemente a las ILC2 y a los mastocitos, amplificando la producción de IL-5 e IL-13 y potenciando la respuesta alérgica de tipo 2.",
+		reference: { authors: "Schmitz J, Owyang A, Oldham E, et al.", year: "2005", journal: "Immunity", term: "IL-33 ST2 asthma signaling" },
+	},
+	{
+		id: "nfkb",
+		name: "NF-κB",
+		category: "inflammatory",
+		components: ["NF-κB", "IκB", "IKK"],
+		effect: "Transcripción de genes pro-inflamatorios.",
+		description: "El complejo IKK fosforila a IκB, que se degrada y libera al factor de transcripción NF-κB para translocarse al núcleo. Allí activa la transcripción de citocinas, quimiocinas y moléculas de adhesión pro-inflamatorias, funcionando como un nodo de convergencia de múltiples vías inflamatorias en la vía aérea.",
+		reference: { authors: "Barnes PJ", year: "2006", journal: "J Clin Invest", term: "NF-kB asthma airway inflammation" },
+		dbOverrides: { PathCards: "https://pathcards.genecards.org/search/results?q=NF-KB" }
+	},
+	{
+		id: "nlrp3",
+		name: "NLRP3 Inflamasoma",
+		category: "inflammatory",
+		components: ["NLRP3", "ASC", "Caspasa-1", "IL-1β"],
+		effect: "Maduración de IL-1β; inflamación de la vía aérea.",
+		description: "El inflamasoma NLRP3 se ensambla ante señales de daño celular y activa a la caspasa-1, que escinde pro-IL-1β a su forma madura y activa. Este eje se asocia a fenotipos de asma neutrofílica, con inflamación más resistente a corticoides.",
+		reference: { authors: "Schroder K, Tschopp J", year: "2010", journal: "Cell", term: "NLRP3 inflammasome asthma IL-1beta" },
+	},
+	{
+		id: "ige-fceri",
+		name: "IgE–FcεRI",
+		category: "immune",
+		components: ["IgE", "FcεRI", "Lyn", "Syk"],
+		effect: "Degranulación mastocitaria, liberación de histamina.",
+		description: "El entrecruzamiento de IgE unida al receptor de alta afinidad FcεRI por el alérgeno activa las cinasas Lyn y Syk, desencadenando la degranulación de mastocitos y basófilos con liberación de histamina y otros mediadores. Es el mecanismo central de la reacción de hipersensibilidad inmediata (tipo I).",
+		reference: { authors: "Galli SJ, Tsai M, Piliponsky AM", year: "2008", journal: "Nature", term: "IgE FceRI mast cell degranulation asthma" },
+	},
+	{
+		id: "leucotrienos",
+		name: "Leucotrienos",
+		category: "inflammatory",
+		components: ["5-LOX", "FLAP", "LTC4", "LTD4", "LTE4", "CysLT1"],
+		effect: "Broncoconstricción y aumento de permeabilidad.",
+		description: "El ácido araquidónico es procesado por 5-LOX (con la proteína FLAP) hasta generar los cisteinil-leucotrienos LTC4, LTD4 y LTE4, que actúan sobre el receptor CysLT1 del músculo liso bronquial. Producen broncoconstricción potente, aumento de la permeabilidad vascular e hipersecreción de moco; es la diana de antileucotrienos como montelukast.",
+		reference: { authors: "Peters-Golden M, Henderson WR Jr", year: "2007", journal: "N Engl J Med", term: "cysteinyl leukotrienes asthma signaling" },
+	},
+	{
+		id: "tgfb-remodelado",
+		name: "TGF-β / Remodelado",
+		category: "other",
+		components: ["TGF-β", "TβRI/II", "SMAD2/3", "SMAD4"],
+		effect: "Fibrosis y remodelado de la vía aérea.",
+		description: "TGF-β activa a sus receptores de superficie, que fosforilan a SMAD2/3; estos se asocian a SMAD4 y regulan genes implicados en fibrosis subepitelial, hiperplasia del músculo liso y depósito de matriz extracelular, procesos característicos del remodelado crónico de la vía aérea.",
+		reference: { authors: "Halwani R, Al-Muhsen S, Hamid Q", year: "2011", journal: "Am J Respir Cell Mol Biol", term: "TGF-beta SMAD airway remodeling asthma" },
+	},
+	{
+		id: "il17",
+		name: "Vía IL-17",
+		category: "inflammatory",
+		components: ["IL-17A", "IL-17F", "IL-17RA", "ACT1", "NF-κB"],
+		effect: "Inflamación neutrofílica, esteroide-resistente en algunos fenotipos.",
+		description: "Los linfocitos Th17 producen IL-17A/F, que señalizan a través de IL-17RA y el adaptador ACT1 hacia NF-κB, promoviendo la producción de quimiocinas reclutadoras de neutrófilos. Este eje se relaciona con fenotipos de asma grave, neutrofílica y con menor respuesta a corticoides inhalados.",
+		reference: { authors: "Newcomb DC, Peebles RS Jr", year: "2013", journal: "Curr Opin Immunol", term: "IL-17 Th17 asthma neutrophilic signaling" },
+	}
 ];
 
-// Estado de filtros y referencias de gráficos
+// Bases de datos a consultar por vía, calculadas a partir de sus componentes clave
+PATHWAYS.forEach(p => { p.databases = pathwayDatabaseLinks(p.components, p.dbOverrides); });
+
+// Estado de filtros
 let PWS_FILTERED = [];
-let pathwayCharts = { cat:null, top:null };
-let chartsReady = false;
 
-// Utils
-const splitVisible = (sel) => document.querySelector(sel)?.offsetParent !== null;
+// =================== Tabla (nombre clicable → modal de detalle) ===================
+function renderPathwaysTable(rows){
+	const tbody = document.querySelector("#pathwaysTable tbody");
+	if (!tbody) return;
 
-// Paleta: n colores distintos (HSL) para barras diferentes
-function palette(n){
-  const arr = [];
-  for (let i = 0; i < n; i++){
-    const hue = Math.round((360 / Math.max(1,n)) * i);
-    arr.push(`hsl(${hue} 70% 55%)`);
-  }
-  return arr;
-}
+	if (!rows.length) {
+		tbody.innerHTML = `<tr class="pathway-empty-row"><td colspan="3">No se encontraron vías de señalización con los filtros seleccionados.</td></tr>`;
+		return;
+	}
 
-// =================== KPIs ===================
-function renderPathwaysKPIs(rows){
-	const kVias = document.getElementById("kpiVias");
-	const kComp = document.getElementById("kpiComponentes");
-	const kCats = document.getElementById("kpiCategorias");
-
-	if (!kVias || !kComp || !kCats) return;
-
-	const vias = rows.length;
-	const compSet = new Set(rows.flatMap(r => r.components));
-	const cats = new Set(rows.map(r => r.category)).size;
-
-	kVias.textContent = vias;
-	kComp.textContent = compSet.size;
-	kCats.textContent = cats;
-}
-
-// =================== Tarjetas (sin modal) ===================
-function renderPathwayCards(rows){
-	const grid = document.getElementById("pathways-grid");
-	if (!grid) return;
-	grid.innerHTML = "";
-
-	rows.forEach((p, i) => {
-		const card = document.createElement("div");
-		card.className = "pathway-card";
-		card.style.animationDelay = `${i * 0.06}s`;
-
-		const compsHTML = p.components.map(c => `<span class="component-tag">${c}</span>`).join("");
-
-		card.innerHTML = `
-			<div class="pathway-title">${p.name}</div>
-			<div class="pathway-components">
-				<h4>Componentes Clave</h4>
-				<div class="components-tags">${compsHTML}</div>
-			</div>
-			<div class="pathway-effect">${p.effect || ""}</div>
-			<div class="pathway-reference">${p.reference || ""}</div>
+	tbody.innerHTML = rows.map(p => {
+		return `
+			<tr>
+				<td class="pathway-name-cell"><button type="button" class="pathway-name-link" data-id="${p.id}">${p.name}</button></td>
+				<td>${p.components.join(", ")}</td>
+				<td>${p.effect || ""}</td>
+			</tr>
 		`;
+	}).join("");
 
-		grid.appendChild(card);
+	tbody.querySelectorAll(".pathway-name-link").forEach(btn => {
+		btn.addEventListener("click", () => showPathwayDetails(btn.getAttribute("data-id")));
 	});
 }
 
-// =================== Gráficos ===================
-function renderPathwayCharts(rows){
-	if (typeof Chart === 'undefined') return;
-	if (!splitVisible("#vias-señalizacion")) return;
+// =================== Modal de detalle (descripción, componentes, referencia y bases de datos) ===================
+function showPathwayDetails(id){
+	const p = PATHWAYS.find(x => x.id === id);
+	const modal = document.getElementById("pathwayModal");
+	const modalTitle = document.getElementById("pathwayModalTitle");
+	const modalBody = document.getElementById("pathwayModalBody");
 
-	const destroy = (c) => { if (c && c.destroy) c.destroy(); };
-	destroy(pathwayCharts.cat); 
-	destroy(pathwayCharts.top);
+	if (!p || !modal || !modalTitle || !modalBody) return;
 
-  // ---- Gráfico 1: vías por categoría ----
-  const catOrder = ["cytokine","immune","inflammatory","other"];
-  const labels = ["Citocinas","Inmune","Inflamatorias","Otras"];
-  const counts = catOrder.map(k => rows.filter(r => r.category === k).length);
-  const colors1 = palette(counts.length);
+	modalTitle.textContent = p.name;
 
-  const ctx1 = document.getElementById("chartPathwayCategorias");
-	if (ctx1) {
-		pathwayCharts.cat = new Chart(ctx1.getContext("2d"), {
-			type: "bar",
-			data: {
-				labels,
-				datasets: [{
-					label: "Vías",
-					data: counts,
-					backgroundColor: colors1,
-					borderColor: colors1.map(c => c.replace("55%)","40%)")),
-					borderWidth: 1
-				}]
-			},
-			options: {
-				responsive: true, maintainAspectRatio: false,
-				scales: { y: { beginAtZero: true, title: { display: true, text: "Conteo" } } },
-				plugins: { legend: { display: false } }
-			}
-		});
-	}
+	const dbHTML = p.databases.map(d => `
+		<li>
+			<strong>${d.label}</strong>
+			<span class="pathway-db-desc">${d.description}</span><br>
+			<a href="${d.url}" target="_blank" rel="noopener">Consultar en ${d.label}</a>
+		</li>
+	`).join("");
 
-  // ---- Gráfico 2: top componentes ----
-  const freq = {};
-  rows.flatMap(r => r.components).forEach(c => { freq[c] = (freq[c] || 0) + 1; });
-  const sortedComps = Object.entries(freq).sort((a,b)=> b[1] - a[1]).slice(0, 10);
+	modalBody.innerHTML = `
+		<div class="pathway-modal-grid">
+			<div class="gene-card pathway-card-funcion">
+				<div class="gene-card-header">
+					<i class="uil uil-share-alt"></i>
+					<div>
+						<span class="gene-tag">Descripción de la vía</span>
+						<span class="gene-subtitle">Mecanismo molecular y efecto biológico</span>
+					</div>
+				</div>
+				<div class="pathway-modal-meta">
+					<span class="pathway-badge ${p.category}">${PATHWAY_CATEGORY_LABELS[p.category]}</span>
+				</div>
+				<p class="gene-card-text">${p.description}</p>
+				<h4 class="biomark-subhead">Componentes Clave</h4>
+				<p class="gene-card-text">${p.components.join(", ")}</p>
+			</div>
 
-  const topMeta = document.getElementById("topCompMeta");
-  if (topMeta) topMeta.textContent = `(según filtros activos: ${sortedComps.length})`;
+			<div class="gene-card pathway-card-db">
+				<div class="gene-card-header">
+					<i class="uil uil-database"></i>
+					<div>
+						<span class="gene-tag">Bases de datos a consultar</span>
+					</div>
+				</div>
+				<ul class="gene-card-list gene-card-list--compact">
+					${dbHTML}
+				</ul>
+			</div>
 
-  const labels2 = sortedComps.map(x => x[0]);
-  const data2   = sortedComps.map(x => x[1]);
-  const colors2 = palette(data2.length);
+			<div class="gene-card pathway-card-ref">
+				<div class="gene-card-header">
+					<i class="uil uil-book-open"></i>
+					<div>
+						<span class="gene-tag">Referencia bibliográfica</span>
+					</div>
+				</div>
+				<ul class="gene-card-list gene-card-list--compact">
+					<li>
+						<a href="${pathwayPubmedLink(p.reference)}" target="_blank" rel="noopener">Buscar en PubMed</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	`;
 
-  const ctx2 = document.getElementById("chartTopComponentes");
-	if (ctx2) {
-		pathwayCharts.top = new Chart(ctx2.getContext("2d"), {
-			type: "bar",
-			data: {
-				labels: labels2,
-				datasets: [{
-					label: "Frecuencia",
-					data: data2,
-					backgroundColor: colors2,
-					borderColor: colors2.map(c => c.replace("55%)","40%)")),
-					borderWidth: 1
-				}]
-			},
-			options: {
-				indexAxis: "y",
-				responsive: true, maintainAspectRatio: false,
-				scales: { x: { beginAtZero: true, title: { display: true, text: "Apariciones" } } },
-				plugins: { legend: { display: false } }
-			}
-		});
-	}
-
-	chartsReady = true;
+	modal.style.display = "block";
 }
 
-function ensurePathwayCharts(){
-	if (!chartsReady) renderPathwayCharts(PWS_FILTERED);
-	else Object.values(pathwayCharts).forEach(c => c && c.resize());
+function closePathwayModal(){
+	const modal = document.getElementById("pathwayModal");
+	if (modal) modal.style.display = "none";
 }
 
 // =================== Filtros + búsqueda ===================
@@ -1409,14 +1871,13 @@ function applyPathwayFilters(){
 	PWS_FILTERED = PATHWAYS.filter(p => {
 		const matchesQ = !q || p.name.toLowerCase().includes(q)
 			|| p.effect.toLowerCase().includes(q)
+			|| p.description.toLowerCase().includes(q)
 			|| p.components.some(c => c.toLowerCase().includes(q));
 		const matchesF = (filt === "all") || p.category === filt;
 		return matchesQ && matchesF;
 	});
 
-	renderPathwaysKPIs(PWS_FILTERED);
-	renderPathwayCards(PWS_FILTERED);
-	renderPathwayCharts(PWS_FILTERED);
+	renderPathwaysTable(PWS_FILTERED);
 }
 
 // =================== Utils ===================
@@ -1425,7 +1886,8 @@ const debounce = (fn, ms=150) => { let t; return (...a) => { clearTimeout(t); t 
 
 // ================ Inicialización de vías de señalización ================
 document.addEventListener("DOMContentLoaded", () => {
-	// Estado base (no renderizamos gráficos hasta que el usuario abra la pestaña de vías)
+	if (!document.getElementById("pathwaysTable")) return;
+
 	PWS_FILTERED = [...PATHWAYS];
 
 	// Listeners de filtros/búsqueda
@@ -1439,15 +1901,441 @@ document.addEventListener("DOMContentLoaded", () => {
 		pathwayFilter.addEventListener("change", applyPathwayFilters);
 	}
 
-	// KPIs + tarjetas iniciales (sin gráficos) por si la pestaña ya está visible
-	renderPathwaysKPIs(PWS_FILTERED);
-	renderPathwayCards(PWS_FILTERED);
+	renderPathwaysTable(PWS_FILTERED);
 
-	// Cuando se cambie el tamaño, si la pestaña está visible, ajusta gráficos
-	window.addEventListener("resize", () => {
-		const viasTab = document.querySelector("#vias-señalizacion");
-		if (viasTab && viasTab.offsetParent !== null) {
-			Object.values(pathwayCharts).forEach(c => c && c.resize());
+	// Modal de detalle - cierre
+	const pathwayModal = document.getElementById("pathwayModal");
+	if (pathwayModal) {
+		const closeBtn = pathwayModal.querySelector(".close");
+		if (closeBtn) closeBtn.addEventListener("click", closePathwayModal);
+		pathwayModal.addEventListener("click", (event) => {
+			if (event.target === pathwayModal) closePathwayModal();
+		});
+	}
+});
+
+
+
+// =================== BIOMARCADORES ===================
+// Datos embebidos: biomarcadores clínicos relevantes en asma alérgica
+const CATEGORY_LABELS = {
+	tipo2: "Inflamación tipo 2 / eosinofílica"
+};
+
+const SAMPLE_LABELS = {
+	sangre: "Sangre / Suero",
+	esputo: "Esputo inducido",
+	aire: "Aire exhalado"
+};
+
+// Construye el enlace de una referencia: prioriza PMID, luego DOI
+function literatureLink(lit){
+	if (lit.pmid) return `https://pubmed.ncbi.nlm.nih.gov/${lit.pmid}/`;
+	if (lit.doi) return `https://doi.org/${lit.doi}`;
+	return `https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(lit.term || "")}`;
+}
+
+function literatureId(lit){
+	if (lit.pmid) return `PMID: ${lit.pmid}`;
+	if (lit.doi) return `DOI: ${lit.doi}`;
+	return "";
+}
+
+// Genera los 3 enlaces de identificadores externos a partir del símbolo del gen/proteína
+function geneDatabaseLinks(symbol){
+	return [
+		{
+			label: "GeneCards",
+			description: "Ficha completa del gen: función, sinónimos y enfermedades asociadas.",
+			url: `https://www.genecards.org/cgi-bin/carddisp.pl?gene=${encodeURIComponent(symbol)}`
+		},
+		{
+			label: "UniProt",
+			description: "Secuencia, dominios funcionales y ubicación subcelular de la proteína.",
+			url: `https://www.uniprot.org/uniprotkb?query=gene:${encodeURIComponent(symbol)}+AND+organism_id:9606&facets=reviewed:true`
+		},
+		{
+			label: "Human Protein Atlas",
+			description: "Expresión tisular, celular y subcelular de la proteína (inmunohistoquímica).",
+			url: `https://www.proteinatlas.org/search/${encodeURIComponent(symbol)}`
 		}
+	];
+}
+
+// La identidad del eosinófilo no depende de una sola proteína
+function eosinophilReceptorIdentity(){
+	return {
+		intro: "La biología única y la identidad celular del eosinófilo no dependen de una sola proteína: están definidas por la combinación y la alta densidad de tres receptores de superficie clave, que determinan su desarrollo, reclutamiento y funciones efectoras.",
+		receptors: [
+			{
+				symbol: "IL-5Rα",
+				gene: "IL5RA",
+				name: "Cadena alfa del receptor de Interleucina-5",
+				role: "Regula el desarrollo, la maduración y la supervivencia del eosinófilo en la médula ósea en respuesta a IL-5. Es la diana terapéutica directa de mepolizumab y benralizumab.",
+				url: `https://www.genecards.org/cgi-bin/carddisp.pl?gene=${encodeURIComponent("IL5RA")}`
+			},
+			{
+				symbol: "CCR3",
+				gene: "CCR3",
+				name: "Receptor de quimiocina CC tipo 3",
+				role: "Receptor de eotaxinas que dirige el reclutamiento y la migración del eosinófilo desde la sangre hacia el tejido inflamado de la vía aérea.",
+				url: `https://www.genecards.org/cgi-bin/carddisp.pl?gene=${encodeURIComponent("CCR3")}`
+			},
+			{
+				symbol: "Siglec-8",
+				gene: "SIGLEC8",
+				name: "Lectina tipo inmunoglobulina de unión al ácido siálico 8",
+				role: "Receptor inhibitorio casi exclusivo del eosinófilo; su activación induce apoptosis selectiva, por lo que es diana de nuevas terapias en desarrollo.",
+				url: `https://www.genecards.org/cgi-bin/carddisp.pl?gene=${encodeURIComponent("SIGLEC8")}`
+			}
+		]
+	};
+}
+
+
+const BIOMARKERS = [
+	{
+		id: "eos",
+		name: "Eosinófilos",
+		fullname: "Eosinófilos en sangre (EOS)",
+		category: "tipo2",
+		sample: "sangre",
+		cutoff: "≥150–300 células/µL",
+		description: "Recuento de eosinófilos circulantes, células efectoras clave de la inflamación tipo 2 reclutadas y activadas principalmente por IL-5.",
+		utility: "Biomarcador principal para seleccionar candidatos a terapias anti-IL5/IL5R y predecir exacerbaciones.",
+		refInterpretation: {
+			unit: "Los resultados se expresan en células/µL (recuento absoluto en sangre periférica).",
+			guideline: "Los ensayos clínicos de terapias anti-IL5 (mepolizumab: Ortega et al., 2014; Pavord et al., 2012) emplearon umbrales de 150 células/µL en el momento de la evaluación o 300 células/µL en el último año para definir el fenotipo eosinofílico.",
+			rows: [
+				{ range: "&lt; 150 células/µL", classification: "Bajo", meaning: "Inflamación tipo 2 poco probable; considerar endotipo no eosinofílico." },
+				{ range: "150 – 300 células/µL", classification: "Intermedio", meaning: "Posible fenotipo eosinofílico; valorar junto con FeNO e IgE." },
+				{ range: "≥ 300 células/µL", classification: "Alto", meaning: "Fenotipo eosinofílico; buen candidato a terapia anti-IL5/IL5R." }
+			]
+		},
+		receptorIdentity: eosinophilReceptorIdentity(),
+		literature: [
+			{ type: "guideline", authors: "Ortega HG et al.", year: "2014", journal: "N Engl J Med", pmid: "25199059" },
+			{ type: "role", authors: "Fahy JV.", year: "2015", journal: "Nat Rev Immunol", pmid: "25534623" },
+			{ type: "role", authors: "Pavord ID et al.", year: "2012", journal: "Lancet", pmid: "22901886" }
+		]
+	},
+	{
+		id: "feno",
+		name: "FeNO",
+		fullname: "Fracción de Óxido Nítrico Exhalado",
+		category: "tipo2",
+		sample: "aire",
+		cutoff: "< 25 ppb (< 20 ppb en niños) Bajo / Normal",
+		description: "Mide el óxido nítrico exhalado, producto de la vía de la sintasa de óxido nítrico inducible (iNOS) en el epitelio bronquial. Se eleva con la actividad de IL-4 e IL-13 y refleja inflamación eosinofílica de la vía aérea.",
+		utility: "Apoya el diagnóstico, ajusta dosis de corticoides inhalados y predice respuesta a terapias anti-tipo 2.",
+		refInterpretation: {
+			unit: "Los resultados se expresan en partes por billón (ppb).",
+			guideline: "Según las guías de la American Thoracic Society (ATS, 2011), recogidas también por GINA y GEMA, los valores de referencia difieren entre adultos y niños.",
+			rows: [
+				{ range: "&lt; 25 ppb (&lt; 20 ppb en niños)", classification: "Bajo / Normal", meaning: "Inflamación eosinofílica poco probable; considerar diagnósticos alternativos." },
+				{ range: "25 – 50 ppb (20 – 35 ppb en niños)", classification: "Intermedio", meaning: "Interpretar junto con la clínica, la exposición a corticoides y otros biomarcadores tipo 2." },
+				{ range: "&gt; 50 ppb (&gt; 35 ppb en niños)", classification: "Elevado", meaning: "Inflamación eosinofílica probable; buena respuesta esperada a corticoides inhalados." }
+			]
+		},
+		databases: geneDatabaseLinks("NOS2"),
+		literature: [
+			{ type: "guideline", authors: "Dweik RA et al.", year: "2011", journal: "Am J Respir Crit Care Med", pmid: "21885636" },
+			{ type: "role", authors: "Alving K et al.", year: "1993", journal: "Eur Respir J", pmid: "7507065" },
+			{ type: "role", authors: "Petsky HL et al.", year: "2018", journal: "Thorax", pmid: "29858277" }
+		]
+	},
+	{
+		id: "ige",
+		name: "IgE Total",
+		fullname: "Inmunoglobulina E (IgE) Total",
+		category: "tipo2",
+		sample: "sangre",
+		cutoff: "30–700 UI/mL (dependiente de edad/peso)",
+		description: "Anticuerpo central en la respuesta alérgica; su producción es inducida por IL-4 e IL-13 durante el cambio de isotipo de linfocitos B. Niveles elevados se asocian a fenotipo atópico.",
+		utility: "Criterio de elegibilidad y dosificación para terapia anti-IgE (omalizumab).",
+		refInterpretation: {
+			unit: "Los resultados se expresan en UI/mL (equivalente a kUI/L).",
+			guideline: "Los valores normales varían con la edad. Para la elegibilidad a omalizumab, el estudio INNOVATE (Humbert et al., 2005) utilizó un rango pretratamiento de 30–700 UI/mL, aunque la ficha técnica del fármaco contempla dosificación hasta 1500 UI/mL.",
+			rows: [
+				{ range: "&lt; 100 UI/mL", classification: "Normal", meaning: "Baja probabilidad de sensibilización alérgica mediada por IgE." },
+				{ range: "100 – 700 UI/mL", classification: "Elevado", meaning: "Sugiere fenotipo atópico; rango típico de elegibilidad para terapia anti-IgE." },
+				{ range: "&gt; 700 UI/mL", classification: "Muy elevado", meaning: "Requiere ajuste de dosis según peso corporal y ficha técnica del fármaco." }
+			]
+		},
+		databases: geneDatabaseLinks("IGHE"),
+		literature: [
+			{ type: "guideline", authors: "Humbert M et al.", year: "2005", journal: "Allergy", pmid: "15679715" },
+			{ type: "role", authors: "Gould HJ, Sutton BJ.", year: "2008", journal: "Nat Rev Immunol", pmid: "18301424" },
+			{ type: "role", authors: "Busse WW et al.", year: "2011", journal: "N Engl J Med", pmid: "21410369" }
+		]
+	},
+	{
+		id: "ige-especifica",
+		name: "IgE Específica",
+		fullname: "Inmunoglobulina E (IgE) específica a aeroalérgenos perennes",
+		category: "tipo2",
+		sample: "sangre",
+		cutoff: "Prick test (+) o IgE específica (+) a aeroalérgenos de todo el año",
+		description: "Anticuerpo IgE dirigido contra un alérgeno concreto (ácaros, epitelios, hongos u otros aeroalérgenos perennes). Se determina mediante prueba cutánea (prick test) o mediante IgE específica sérica, y confirma la sensibilización alérgica que sustenta el diagnóstico de asma alérgica dentro del endotipo T2.",
+		utility: "Confirma la sensibilización a aeroalérgenos perennes; orienta evitación ambiental, inmunoterapia y elegibilidad a terapia anti-IgE.",
+		refInterpretation: {
+			unit: "Prick test: diámetro de la pápula en mm. IgE específica sérica: kUA/L (clases 0–6 del sistema CAP-RAST).",
+			guideline: "Según el consenso europeo de estandarización del prick test (Heinzerling et al., 2013), se considera positivo un habón ≥3 mm de diámetro. Para IgE específica sérica, el parámetro de práctica clínica de Hamilton y Adkinson (2003) considera positivo un valor ≥0.35 kUA/L.",
+			rows: [
+				{ range: "Prick test &lt; 3 mm / IgE específica &lt; 0.35 kUA/L", classification: "Negativo", meaning: "Sensibilización a ese aeroalérgeno poco probable." },
+				{ range: "Prick test ≥ 3 mm / IgE específica 0.35 – 3.5 kUA/L (clase 1–2)", classification: "Positivo bajo-moderado", meaning: "Sensibilización presente; correlacionar con la relevancia clínica de los síntomas." },
+				{ range: "IgE específica &gt; 3.5 kUA/L (clase ≥ 3)", classification: "Positivo alto", meaning: "Alta probabilidad de relevancia clínica de la sensibilización a ese aeroalérgeno." }
+			]
+		},
+		databases: geneDatabaseLinks("IGHE"),
+		literature: [
+			{ type: "guideline", authors: "Heinzerling L et al.", year: "2013", journal: "Clin Transl Allergy", pmid: "23369181" },
+			{ type: "role", authors: "Hamilton RG, Adkinson NF Jr.", year: "2003", journal: "J Allergy Clin Immunol", pmid: "12592314" }
+		]
+	},
+	{
+		id: "periostina",
+		name: "Periostina",
+		fullname: "Periostina sérica (POSTN)",
+		category: "tipo2",
+		sample: "sangre",
+		cutoff: ">50 ng/mL (variable según ensayo)",
+		description: "Proteína de matriz extracelular inducida por IL-13 en el epitelio bronquial; se considera un marcador sustituto sérico de la actividad de IL-13 en la vía aérea.",
+		utility: "Predice respuesta a terapias anti-IL13 y se asocia con obstrucción fija en asma tipo 2.",
+		refInterpretation: {
+			unit: "Los resultados se expresan en ng/mL; el valor absoluto depende del ensayo utilizado.",
+			guideline: "En los estudios de lebrikizumab (Corren et al., 2011; Jia et al., 2012) se definió \"periostina alta\" a partir de 50 ng/mL, umbral asociado a mayor beneficio del bloqueo de IL-13.",
+			rows: [
+				{ range: "&lt; 20 ng/mL", classification: "Bajo", meaning: "Actividad de IL-13 poco probable en la vía aérea." },
+				{ range: "20 – 50 ng/mL", classification: "Intermedio", meaning: "Interpretar junto con FeNO y eosinófilos." },
+				{ range: "≥ 50 ng/mL", classification: "Alto (periostina-high)", meaning: "Mayor probabilidad de respuesta a terapias anti-IL13." }
+			]
+		},
+		databases: geneDatabaseLinks("POSTN"),
+		literature: [
+			{ type: "guideline", authors: "Jia G et al.", year: "2012", journal: "J Allergy Clin Immunol", pmid: "22857879" },
+			{ type: "role", authors: "Izuhara K et al.", year: "2017", journal: "Cell Mol Life Sci", pmid: "28887633" },
+			{ type: "role", authors: "Corren J et al.", year: "2011", journal: "N Engl J Med", pmid: "21812663" }
+		]
+	},
+	{
+		id: "esputo-eos",
+		name: "Eos. Esputo",
+		fullname: "Eosinófilos en Esputo Inducido",
+		category: "tipo2",
+		sample: "esputo",
+		cutoff: "≥ 3% del recuento celular total",
+		description: "Recuento diferencial de eosinófilos en esputo obtenido mediante inducción con suero salino hipertónico. Refleja de forma directa la inflamación eosinofílica presente en la propia vía aérea, a diferencia de los eosinófilos en sangre, que son una medida indirecta. Se considera el biomarcador avanzado de laboratorio de referencia (\"gold standard\") para el fenotipado T2, aunque su uso rutinario está limitado por la complejidad técnica del procesamiento de la muestra.",
+		utility: "Guía el ajuste de tratamiento antiinflamatorio y confirma el fenotipo eosinofílico cuando los biomarcadores indirectos (sangre) son discordantes con la clínica.",
+		refInterpretation: {
+			unit: "Los resultados se expresan como porcentaje (%) de eosinófilos sobre el recuento celular no escamoso total del esputo.",
+			guideline: "Pizzichini et al. (2018) consolidan el punto de corte de ≥3% de eosinófilos como definición estándar de \"esputo eosinofílico\", usado para guiar el tratamiento antiinflamatorio en asma.",
+			rows: [
+				{ range: "&lt; 2%", classification: "Normal", meaning: "Sin evidencia de inflamación eosinofílica de la vía aérea." },
+				{ range: "2 – 3%", classification: "Límite", meaning: "Correlacionar con clínica y con los demás biomarcadores tipo 2." },
+				{ range: "≥ 3%", classification: "Elevado (esputo eosinofílico)", meaning: "Inflamación eosinofílica activa de la vía aérea; orienta intensificación del tratamiento antiinflamatorio." }
+			]
+		},
+		receptorIdentity: eosinophilReceptorIdentity(),
+		literature: [
+			{ type: "guideline", authors: "Pizzichini E et al.", year: "2018", journal: "Lancet Respir Med", pmid: "29935930" },
+			{ type: "role", authors: "Pizzichini E et al.", year: "1997", journal: "J Allergy Clin Immunol", pmid: "9111500" },
+			{ type: "role", authors: "D'Silva L et al.", year: "2021", journal: "ERJ Open Res", pmid: "33692994" }
+		]
+	}
+];
+
+// Estado de filtros
+let BIOM_FILTERED = [];
+
+// =================== Tabla ===================
+function renderBiomarkTable(rows){
+	const tbody = document.querySelector("#biomarkTable tbody");
+	if (!tbody) return;
+	tbody.innerHTML = "";
+
+	if (rows.length === 0){
+		tbody.innerHTML = `<tr class="biomark-empty-row"><td colspan="3">No se encontraron biomarcadores con los filtros seleccionados.</td></tr>`;
+		return;
+	}
+
+	rows.forEach(b => {
+		const tr = document.createElement("tr");
+		tr.innerHTML = `
+			<td class="biomark-name-cell"><button type="button" class="biomark-name-link" data-id="${b.id}">${b.name}</button></td>
+			<td>${b.fullname}</td>
+			<td>${SAMPLE_LABELS[b.sample]}</td>
+		`;
+		tbody.appendChild(tr);
 	});
+
+	tbody.querySelectorAll(".biomark-name-link").forEach(btn => {
+		btn.addEventListener("click", () => showBiomarkerDetails(btn.getAttribute("data-id")));
+	});
+}
+
+// =================== Filtros + búsqueda ===================
+function applyBiomarkFilters(){
+	const search = document.getElementById("biomSearch");
+	const sampleFilter = document.getElementById("biomSampleFilter");
+
+	const q = search ? search.value.trim().toLowerCase() : "";
+	const sample = sampleFilter ? sampleFilter.value : "";
+
+	BIOM_FILTERED = BIOMARKERS.filter(b => {
+		const matchesQ = !q || b.name.toLowerCase().includes(q) || b.fullname.toLowerCase().includes(q);
+		const matchesSample = !sample || b.sample === sample;
+		return matchesQ && matchesSample;
+	});
+
+	renderBiomarkTable(BIOM_FILTERED);
+}
+
+function populateBiomarkSelects(){
+	const sampleFilter = document.getElementById("biomSampleFilter");
+	if (!sampleFilter) return;
+
+	Object.entries(SAMPLE_LABELS).forEach(([key, label]) => {
+		const opt = document.createElement("option");
+		opt.value = key;
+		opt.textContent = label;
+		sampleFilter.appendChild(opt);
+	});
+}
+
+// =================== Modal de detalle (3 cards, estilo Genética) ===================
+function showBiomarkerDetails(id){
+	const b = BIOMARKERS.find(x => x.id === id);
+	const modal = document.getElementById("biomarkerModal");
+	const modalTitle = document.getElementById("biomModalTitle");
+	const modalBody = document.getElementById("biomModalBody");
+
+	if (!b || !modal || !modalTitle || !modalBody) return;
+
+	modalTitle.textContent = `${b.name} — ${b.fullname}`;
+
+	const dbLinksHTML = b.receptorIdentity
+		? `
+			<p class="gene-card-text">${b.receptorIdentity.intro}</p>
+			<ul class="gene-card-list gene-card-list--compact biomark-receptor-list">
+				${b.receptorIdentity.receptors.map(r => `
+					<li>
+						<strong>${r.symbol}</strong> <span class="biomark-receptor-name">(${r.name})</span>
+						<span class="biomark-db-desc">${r.role}</span>
+						<a href="${r.url}" target="_blank" rel="noopener">Consultar ${r.gene} en GeneCards</a>
+					</li>
+				`).join("")}
+			</ul>
+		`
+		: `
+			<ul class="gene-card-list gene-card-list--compact">
+				${b.databases.map(d => `
+					<li>
+						<strong>${d.label}</strong>
+						<span class="biomark-db-desc">${d.description}</span><br>
+						<a href="${d.url}" target="_blank" rel="noopener">Consultar en ${d.label}</a>
+					</li>
+				`).join("")}
+			</ul>
+		`;
+
+	const litHTML = b.literature.map(l => `
+		<li>
+			<strong>${l.authors}</strong> (${l.year}). <em>${l.journal}</em>.<br>
+			<span class="gene-chip-label">${literatureId(l)}</span>
+			— <a href="${literatureLink(l)}" target="_blank" rel="noopener">Ver publicación</a>
+		</li>
+	`).join("");
+
+	const refRowsHTML = b.refInterpretation.rows.map(r => `
+		<tr><td>${r.range}</td><td>${r.classification}</td><td>${r.meaning}</td></tr>
+	`).join("");
+
+	modalBody.innerHTML = `
+		<div class="biomark-modal-grid">
+			<div class="gene-card biomark-card-funcion">
+				<div class="gene-card-header">
+					<i class="uil uil-dna"></i>
+					<div>
+						<span class="gene-tag">Función del biomarcador</span>
+						<span class="gene-subtitle">Rol biológico y utilidad clínica</span>
+					</div>
+				</div>
+				<div class="biomark-inline-meta">
+					<span class="biomark-badge ${b.category}">${CATEGORY_LABELS[b.category]}</span>
+					<span class="biomark-chip"><span class="biomark-chip-label">Muestra:</span> <span class="biomark-chip-value">${SAMPLE_LABELS[b.sample]}</span></span>
+				</div>
+				<p class="gene-card-text">${b.description}</p>
+				<p class="gene-card-text"><strong>Utilidad clínica:</strong> ${b.utility}</p>
+
+				<h4 class="biomark-subhead">Valores de Referencia e Interpretación</h4>
+				<p class="gene-card-text">${b.refInterpretation.unit}</p>
+				<p class="gene-card-text">${b.refInterpretation.guideline}</p>
+				<div class="biomark-ref-table-wrap">
+					<table class="biomark-ref-table">
+						<thead>
+							<tr><th>Rango</th><th>Clasificación</th><th>Significado clínico</th></tr>
+						</thead>
+						<tbody>${refRowsHTML}</tbody>
+					</table>
+				</div>
+			</div>
+
+			<div class="gene-card biomark-card-ident">
+				<div class="gene-card-header">
+					<i class="uil uil-database"></i>
+					<div>
+						<span class="gene-tag">Identificadores externos</span>
+						<span class="gene-subtitle">Bases de datos para consultar</span>
+					</div>
+				</div>
+				${dbLinksHTML}
+			</div>
+
+			<div class="gene-card biomark-card-lit">
+				<div class="gene-card-header">
+					<i class="uil uil-book-open"></i>
+					<div>
+						<span class="gene-tag">Literatura</span>
+					</div>
+				</div>
+				<ul class="gene-card-list gene-card-list--compact">
+					${litHTML}
+				</ul>
+			</div>
+		</div>
+	`;
+
+	modal.style.display = "block";
+}
+
+function closeBiomarkModal(){
+	const modal = document.getElementById("biomarkerModal");
+	if (modal) modal.style.display = "none";
+}
+
+// =================== Inicialización de Biomarcadores ===================
+document.addEventListener("DOMContentLoaded", () => {
+	if (!document.getElementById("biomarkTable")) return;
+
+	populateBiomarkSelects();
+	BIOM_FILTERED = [...BIOMARKERS];
+
+	renderBiomarkTable(BIOM_FILTERED);
+
+	const search = document.getElementById("biomSearch");
+	const sampleFilter = document.getElementById("biomSampleFilter");
+
+	if (search) search.addEventListener("input", debounce(applyBiomarkFilters, 150));
+	if (sampleFilter) sampleFilter.addEventListener("change", applyBiomarkFilters);
+
+	// Modal - cierre
+	const modal = document.getElementById("biomarkerModal");
+	if (modal) {
+		const closeBtn = modal.querySelector(".close");
+		if (closeBtn) closeBtn.addEventListener("click", closeBiomarkModal);
+		modal.addEventListener("click", (event) => {
+			if (event.target === modal) closeBiomarkModal();
+		});
+	}
 });
