@@ -197,49 +197,22 @@ header .menu a:hover, header .menu a.activo{
 	border-radius: 15px;		
 }
 
+
+
 /* --- Epidemiología === */
-.epidemio-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 20px;
-  margin: 20px 0 30px;
+#epidemio .section-header{
+	text-align: left;
+	margin-bottom: 1.2rem;
 }
 
-.epidemio-cards .card {
-  position: relative;
-  background-color: rgba(9, 18, 54, 0.9);
-  border: 1px solid rgba(91, 133, 255, 0.2);
-  border-radius: 12px;
-  padding: 20px;
-  text-align: center;
-  box-shadow: var(--box-shadow);
-  transition: transform 0.3s ease;
+#epidemio .section-header h2{
+	font-size: 1.9rem;
+	margin-bottom: 0.4rem;
 }
 
-.epidemio-cards .card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 10px 30px rgba(91, 133, 255, 0.3);
-}
-
-.epidemio-cards .card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #5b85ff, #ff6b6b);
-}
-
-.epidemio-cards .card span {
-  display: block;
-  font-size: 0.9em;
-  color: #ccc;
-  margin-bottom: 8px;
-}
-
-.epidemio-cards .card strong {
-  font-size: 1.4em;
-  color: var(--text-color);
-  line-height: 1.4;
+#epidemio .section-header p{
+	color: var(--text-color);
+	margin-bottom: 1rem;
 }
 
 /* === Gráfico Epidemiología === */
@@ -247,7 +220,7 @@ header .menu a:hover, header .menu a.activo{
   background-color: rgba(9, 18, 54, 0.9);
   border-radius: 12px;
   padding: 20px;
-  margin-bottom: 40px;  
+  margin-bottom: 30px;  
 }
 
 .chart-wrapper h3 {
@@ -261,13 +234,124 @@ header .menu a:hover, header .menu a.activo{
   position: relative;
   width: 100%;
   max-width: 100%;
-  height: 300px;
-  margin-bottom: 30px; 
+  height: var(--chart-h);
+  margin-bottom: 14px; 
 }
 
 .chart-container canvas {
   width: 100% !important;
   height: 100% !important;
+}
+
+.epidemio-chart-note{
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+/* === Tabla de hallazgos: categorías === */
+#epidemioTable td.epidemio-finding-cell{
+  max-width: 480px;
+}
+
+.epidemio-name-link{
+  color: #5b85ff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  font-family: inherit;
+  text-align: left;
+  line-height: 1.4;
+}
+
+.epidemio-name-link:hover{
+  color: #ff6b6b;
+  text-decoration: underline;
+}
+
+.epidemio-source-cell{
+  font-size: 0.85em;
+  color: #ccc;
+  white-space: nowrap;
+}
+
+/* Categoría del hallazgo: texto plano, sin insignia */
+.epidemio-category-cell{
+  font-size: 0.9em;
+  color: #ddd;
+  white-space: nowrap;
+}
+
+/* Estado vacío (sin resultados) */
+.epidemio-empty-row td{
+  text-align: center;
+  padding: 1.6rem 1rem;
+  color: #ccc;
+  font-style: italic;
+}
+
+/* === Tabla de prevalencia por continente === */
+.epidemio-continent-note{
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 10px;
+  line-height: 1.5;
+}
+
+#epidemioContinentTable td.epidemio-continent-cell{
+  font-weight: 600;
+  color: #9ec2ff;
+  white-space: nowrap;
+}
+
+#epidemioContinentTable td.epidemio-continent-ref{
+  font-size: 0.82em;
+  color: #ccc;
+  line-height: 1.5;
+}
+
+#epidemioContinentTable td.epidemio-continent-ref a{
+  color: #9ec2ff;
+  text-decoration: underline;
+}
+
+#epidemioContinentTable td.epidemio-continent-ref a:hover{
+  color: #ffb3b3;
+}
+
+/* === Modal de detalle — Epidemiología (reutiliza .modal / .gene-card) === */
+#epidemioModal.modal{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  min-height: 100vh;
+  overflow: visible;
+}
+
+#epidemioModal .modal-content{
+  max-width: 900px;
+}
+
+.epidemio-modal-meta{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.6rem 0 0.9rem;
+}
+
+.epidemio-ref-block{
+  margin-top: 0.6rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* === Tabla Epidemiología === */
@@ -312,6 +396,8 @@ th {
 tr:hover {
   background: rgba(255, 255, 255, 0.1);
 }
+
+
 
 
 /* === Sección Genética === */
@@ -744,6 +830,8 @@ tr:hover {
 
 
 
+
+
 /* --- Estudios genéticos--- */
 
 /* Estadísticas */
@@ -966,6 +1054,7 @@ tr:hover {
 
 
 
+
 /* --- Alérgenos --- */
 #Alergenos{ 
 	padding: 1.2rem 0.8rem 2rem; 
@@ -979,181 +1068,192 @@ tr:hover {
 	margin-bottom: 1rem; 
 }
 
-.alerg-toolbar{
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 0.75rem;
-  background: rgba(9, 18, 54, 0.9); /* --- color primera barra --- */
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 16px;
-  padding: 0.85rem;
-  box-shadow: var(--box-shadow);
-  margin-bottom: 1rem;
-}
-.alerg-inputs{ 
-  display: flex; 
-  flex-wrap: wrap; 
-  gap: 0.75rem; 
+/* === Tabla de alérgenos === */
+#alergTable td.alerg-name-cell{
+  white-space: nowrap;
 }
 
-.alerg-inputs label{ 
-  display: grid; 
-  gap: 0.35rem; 
-  font-size: 0.85rem; 
-  color: var(--text-color); 
-}
-
-.alerg-inputs select, .alerg-actions input{
-  background: rgba(9, 18, 54, 0.97); /* --- color combi-box categoría, asociación, región --- */
-  border: 1px solid rgba(255,255,255,0.14);
-  color: #ccc;
-  padding: 0.55rem 0.7rem;
-  border-radius: 12px;
-  min-width: 9rem;
-  outline: none;
-}
-.alerg-actions{ 
-  display: flex; 
-  align-items: end; 
-  gap: 0.6rem; 
-}
-
-.alerg-actions input{ min-width: 16rem; }
-.btn-reset{
-  background: rgba(255,255,255,0.14);
-  color: var(--text-color);
-  border: 1px solid rgba(255,255,255,0.18);
-  padding: .6rem .9rem;
-  border-radius: 12px;
+.alerg-name-link{
+  color: #5b85ff;
+  font-weight: 600;
   cursor: pointer;
-  transition: 0.2s ease;
-}
-.btn-reset:hover{ background: rgba(255,255,255,0.2); }
-
-.alerg-kpis{
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0,1fr));
-  gap: 0.9rem;
-  margin-bottom: 1rem;
-}
-.kpi-card{
-  background: rgba(9, 18, 54, 0.9); /* --- color 2da barra --- */
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 16px;
-  padding: .9rem 1rem;
-  box-shadow: var(--box-shadow);
-  transition: all 0.3s ease;
-}
-
-.kpi-title{ 
-  font-size: 0.85rem; 
-  color: #ccc; 
-}
-
-.kpi-value{ 
-  font-size: 1.6rem; 
-  font-weight: 700; 
-  margin-top: 0.3rem; }
-
-
-/* --- Gráficos Alergénos --- */
-.alerg-grid{
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0,1fr));
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.alerg-card{
-  background: rgba(9, 18, 54, 0.9); /* --- color 3ra barra - gráficos --- */
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 16px;
-  padding: 0.8rem 0.9rem 1.2rem;
-  box-shadow: var(--box-shadow);
-  transition: all 0.3s ease;
-}
-
-.alerg-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 10px 30px rgba(91, 133, 255, 0.3);
-  border-color: #5b85ff;
-}
-
-.alerg-card-header{
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: 0.6rem;
-}
-.alerg-card h3{ font-size: 1rem; font-weight: 700; }
-#subTopN{ color: #ccc; }
-
-/* Contenedor de los charts con altura fija */
-.chart-box{
-  width: 100%;
-  height: var(--chart-h);
-  position: relative;
-}
-.chart-box canvas{
-  display: block;
-  width: 100% !important;
-  height: 100% !important; /* clave para evitar crecimiento infinito */
-}
-
-
-/* --- Tabla Alergénos --- */
-.alerg-table-wrap{
-  background: rgba(9, 18, 54, 0.9); /* --- color tabla --- */
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 16px;
-  padding: 0.4rem;
-  box-shadow: var(--box-shadow);
-  overflow: auto;
-}
-#alergTable{ width: 100%; border-collapse: collapse; min-width: 780px; }
-#alergTable thead th{
-  position: sticky;
-  top: 0;
-  background: #2e2e41;
-  backdrop-filter: blur(6px);
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  transition: color 0.3s ease;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  font-family: inherit;
   text-align: left;
-  padding: 0.7rem 0.6rem;
-  font-size: 0.9rem;
-}
-#alergTable tbody td{
-  padding: 0.6rem 0.6rem;
-  border-bottom: 1px dashed rgba(255,255,255,0.08);
-  vertical-align: top;
-  color: #f0f0f0;
-}
-#alergTable tbody tr:hover{ background: rgba(91, 133, 255, 0.1); }
-
-.alerg-hint { 
-  color: #ccc; 
-  font-size: 0.85rem; 
-  margin-top: 0.6rem; 
 }
 
-.alerg-table-title {
-  font-size: 1.2rem;
+.alerg-name-link:hover{
+  color: #ff6b6b;
+  text-decoration: underline;
+}
+
+.alerg-code{
+  display: block;
+  font-size: 0.78rem;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 0.1rem;
+}
+
+/* Insignia de categoría (colores por grupo de alérgeno) */
+.alerg-badge{
+  font-size: 0.7rem;
   font-weight: 700;
-  margin: 0.6rem 0 0.8rem 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.alerg-badge.acaros{
+  background: rgba(91, 133, 255, 0.18);
+  border-color: rgba(91, 133, 255, 0.6);
+  color: #9ec2ff;
+}
+.alerg-badge.hongos{
+  background: rgba(64, 200, 173, 0.18);
+  border-color: rgba(64, 200, 173, 0.6);
+  color: #8fe6d2;
+}
+.alerg-badge.polen{
+  background: rgba(255, 209, 102, 0.18);
+  border-color: rgba(255, 209, 102, 0.6);
+  color: #ffe19c;
+}
+.alerg-badge.animales{
+  background: rgba(168, 128, 255, 0.18);
+  border-color: rgba(168, 128, 255, 0.6);
+  color: #c9b3ff;
+}
+.alerg-badge.cucarachas{
+  background: rgba(210, 145, 90, 0.18);
+  border-color: rgba(210, 145, 90, 0.6);
+  color: #e6bf9c;
+}
+.alerg-badge.latex{
+  background: rgba(255, 107, 107, 0.18);
+  border-color: rgba(255, 107, 107, 0.6);
+  color: #ffb3b3;
+}
+
+/* Insignia de nivel de asociación clínica (tabla y modal) */
+.alerg-assoc{
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.28rem 0.6rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+.alerg-assoc.alta{
+  background: rgba(255, 107, 107, 0.18);
+  border-color: rgba(255, 107, 107, 0.6);
+  color: #ffb3b3;
+}
+.alerg-assoc.media{
+  background: rgba(255, 209, 102, 0.18);
+  border-color: rgba(255, 209, 102, 0.6);
+  color: #ffe19c;
+}
+.alerg-assoc.baja{
+  background: rgba(64, 200, 173, 0.18);
+  border-color: rgba(64, 200, 173, 0.6);
+  color: #8fe6d2;
+}
+
+/* Estado vacío (sin resultados) */
+.alerg-empty-row td{
   text-align: center;
-  color: var(--text-color);
+  padding: 1.6rem 1rem;
+  color: #ccc;
+  font-style: italic;
 }
 
 
-/* Query Responsive extra - Alergénos */
-@media (max-width: 1200px){
-  .alerg-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+/* === Modal de detalle — Alergénos (reutiliza .modal / .gene-card, mismo posicionamiento que Genética/Biomarcadores/Vías: no cubre la barra de navegación entre secciones) === */
+#alergenoModal.modal{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  min-height: 100vh;
+  overflow: visible;
 }
-@media (max-width: 800px){
-  .alerg-kpis{ grid-template-columns: 1fr; }
-  .alerg-grid{ grid-template-columns: 1fr; }
-  .alerg-toolbar{ grid-template-columns: 1fr; }
-  .alerg-actions{ justify-content: space-between; }
+
+#alergenoModal .modal-content{
+  max-width: 1080px;
 }
+
+.alerg-modal-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    "funcion funcion"
+    "db      ref";
+  gap: 1.2rem;
+  margin-top: 16px;
+  align-items: start;
+}
+
+.alerg-card-funcion{ grid-area: funcion; }
+.alerg-card-db{ grid-area: db; }
+.alerg-card-ref{ grid-area: ref; }
+
+@media (max-width: 900px){
+  .alerg-modal-grid{
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "funcion"
+      "db"
+      "ref";
+  }
+}
+
+.alerg-modal-meta{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.6rem 0 0.9rem;
+}
+
+.alerg-chip{
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.32rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(91, 133, 255, 0.5);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.76rem;
+}
+
+.alerg-chip-label{
+  color: #9ec2ff;
+  font-weight: 600;
+}
+
+.alerg-chip-value{
+  color: #fff;
+}
+
+/* Enlaces a bases de datos (Allergen Nomenclature, UniProt, Allergome) */
+.alerg-db-desc{
+  display: block;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0.15rem 0 0.35rem;
+}
+
 
 
 
@@ -1180,239 +1280,346 @@ tr:hover {
 	margin-bottom: 1rem; 
 }
 
-.search-controls { 
-	display: flex; 
-	gap: 1rem; 
-	justify-content: center; 
-	align-items: center; 
-	margin-bottom: 1.2rem; 
-	flex-wrap: wrap; 
+#vias-señalizacion .section-header{
+	text-align: left;
+	margin-bottom: 1.2rem;
 }
 
-.search-bar { 
-	position: relative; 
-	background: rgba(9, 18, 54, 0.97); 
-	border: 1px solid rgba(255,255,255,0.14); 
+#vias-señalizacion .section-header h2{
+	font-size: 1.9rem;
+	margin-bottom: 0.4rem;
+}
+
+/* === Tabla de vías de señalización === */
+#pathwaysTable td.pathway-name-cell{
+	white-space: nowrap;
+}
+
+.pathway-name-link{
+	color: #5b85ff;
+	font-weight: 600;
+	cursor: pointer;
+	transition: color 0.3s ease;
+	background: none;
+	border: none;
+	padding: 0;
+	font-size: inherit;
+	font-family: inherit;
+	text-align: left;
+}
+
+.pathway-name-link:hover{
+	color: #ff6b6b;
+	text-decoration: underline;
+}
+
+/* Insignia de categoría (colores por tipo de vía, usada en el modal) */
+.pathway-badge{
+	font-size: 0.7rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	padding: 0.3rem 0.65rem;
+	border-radius: 999px;
+	white-space: nowrap;
+	border: 1px solid transparent;
+}
+
+.pathway-badge.cytokine{
+	background: rgba(91, 133, 255, 0.18);
+	border-color: rgba(91, 133, 255, 0.6);
+	color: #9ec2ff;
+}
+
+.pathway-badge.immune{
+	background: rgba(168, 128, 255, 0.18);
+	border-color: rgba(168, 128, 255, 0.6);
+	color: #c9b3ff;
+}
+
+.pathway-badge.inflammatory{
+	background: rgba(255, 107, 107, 0.18);
+	border-color: rgba(255, 107, 107, 0.6);
+	color: #ffb3b3;
+}
+
+.pathway-badge.other{
+	background: rgba(64, 200, 173, 0.18);
+	border-color: rgba(64, 200, 173, 0.6);
+	color: #8fe6d2;
+}
+
+/* Estado vacío (sin resultados) */
+.pathway-empty-row td{
+	text-align: center;
+	padding: 1.6rem 1rem;
 	color: #ccc;
-	border-radius: 15px; 
-	padding: 0.5rem 1rem; 
-	min-width: 9rem; 
-	outline: none;
-	
+	font-style: italic;
 }
-
-.search-bar i { 
-	position: absolute; 
-	left: 1rem; 
-	top: 50%; 
-	transform: translateY(-50%); 
-	background: transparent;
-}
-
-.search-bar input { 
-	background: rgba(255,255,255,0.14); 
-	border: 1px solid rgba(255,255,255,0.18); 
-	border-radius: 12px;
-	color: var(--text-color); 
-	padding-left: 2rem; 
-	width: 100%; 
-	font-size: 1rem; 
-	cursor: pointer; 	
-}
-
-
-.filter-controls select {
-	background: rgba(255,255,255,0.08); 
-	border: 1px solid rgba(255,255,255,0.14); 
-	border-radius: 20px; 
-	padding: 0.5rem 1rem; 
-	color:var(--text-color); 
-	backdrop-filter: blur(10px); 
-	cursor: pointer; 
-	font-size: 1rem;
-}
-
-.filter-controls select option { 
-	background: #2e2e41; 
-	color: var(--text-color); 
-}
-
-.pathways-stats { 
-	display: grid; 
-	grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); 
-	gap: 1rem; 
-	margin: 1rem 0 1.6rem; 
-}
-
-.stat-card { 
-	position: relative;
-	background-color: rgba(9, 18, 54, 0.9); 
-	border: 1px solid rgba(91, 133, 255, 0.2); 
-	border-radius: 12px; 
-	padding: 20px;   
-	text-align: center; 
-	box-shadow: var(--box-shadow);
-	transition: 0.3s ease; 
-}
-
-.stat-card:hover { 
-	transform: translateY(-2px); 
-	box-shadow: 0 10px 30px rgba(91, 133, 255, 0.3); 
-}
-
-.stat-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #5b85ff, #ff6b6b);
-}
-
-
-.stat-info h4 { 
-	font-size: 1.5rem; 
-	color: var(--text-color); 
-	margin-bottom: 0.2rem; 
-}
-
-.stat-info p { 
-	color: rgba(255,255,255,0.7); 
-	font-size: 0.9rem; 
-}
-
-
-/* === Gráfico Vías de señalización === */
-.pathway-charts { 
-	display: grid; 
-	grid-template-columns: repeat(2,minmax(0,1fr)); 
-	gap: 1.2rem; 
-	margin-bottom: 1.5rem; 
-}
-
-.chart-card { 
-	background: rgba(9, 18, 54, 0.9); 
-	border: 1px solid rgba(255,255,255,0.14); 
-	border-radius: 16px; 
-	padding: 0.8rem 0.9rem 1.2rem; 
-	box-shadow: var(--box-shadow);
-  	transition: all 0.3s ease;
-}
-
-.chart-card:hover {
-	transform: scale(1.05);
-  	box-shadow: 0 10px 30px rgba(91, 133, 255, 0.3);
-  	border-color: #5b85ff;	
-}
-
-.chart-header { 
-	display: flex; 
-	justify-content: space-between; 
-	align-items: baseline; 
-	margin-bottom: 0.6rem; 
-}
-
-.chart-box { 
-	position: relative; 
-	width: 100%; 
-	height: var(--chart-h); 
-}
-
-.chart-box canvas { 
-	display: block; 
-	width: 100% !important; 
-	height: 100% !important; 
-}
-
-
-
-.pathways-grid { 
-	display: grid; 
-	grid-template-columns: repeat(auto-fit,minmax(340px,1fr)); 
-	gap: 1rem; 
-	margin: 0.8rem 0 2rem; 
-}
-
-.pathway-card { 
-	position: relative;
-	background-color: rgba(9, 18, 54, 0.9);
-	border: 1px solid rgba(91, 133, 255, 0.2); 
-	border-radius: 12px; 
-	padding: 1.2rem;   
-	overflow: hidden; 
-	box-shadow: var(--box-shadow);
-	transition: 0.3s ease; 
-}
-
-.pathway-card:hover { 
-	transform: translateY(-5px); 
-	box-shadow: 0 10px 30px rgba(91, 133, 255, 0.3); 
-	 
-}
-
-.pathway-card::before { 
-	content:''; 
-	position: absolute; 
-	top: 0; 
-	left: 0; 
-	width: 100%; 
-	height: 3px; 
-	background: linear-gradient(135deg,var(--primary-blue),var(--accent-purple)); 
-}
-
-.pathway-title { 
-	font-size: 1.15rem; 
-	font-weight: 600; 
-	margin-bottom: 0.7rem; 
-	display: flex; 
-	align-items: center; 
-	gap: 0.5rem; 
-}
-	
-
-.pathway-components h4 { 
-	font-size: 0.85rem; 
-	color: #5b85ff; 	
-	margin-bottom: 0.4rem; 
-	text-transform: uppercase; 
-	letter-spacing: 1px; 
-}
-
-.components-tags { 
-	display: flex; 
-	flex-wrap: wrap; 
-	gap: 0.4rem; 
-}
-
-.component-tag { 
-	background: rgba(91,133,255,0.15); 	
-	border: 1px solid #5b85ff; 
-	border-radius: 15px; 
-	padding: 0.25rem 0.7rem; 
-	font-size: 0.78rem; 
-	color: var(--text-color); 
-}
-
-.pathway-effect { 
-	font-size: 0.95rem; 
-	color: rgba(255,255,255,0.85); 
-	line-height: 1.5; 
-	margin: 0.6rem 0 0.4rem; 
-}
-
-.pathway-reference { 
-	font-size: 0.85rem; 
-	color: rgba(255,255,255,0.6); 
-	font-style: italic; 
-}
-
-
 
 /* Responsive */
-@media (max-width: 1000px){
-  .pathway-charts{ grid-template-columns:1fr; }
-}
-
 @media (max-width: 768px){
   .pathways-container{ padding:1rem; }
-  .pathways-grid{ grid-template-columns:1fr; }
+}
+
+
+/* === Modal de detalle — Vías de Señalización (reutiliza .modal / .gene-card) === */
+#pathwayModal.modal{
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: auto;
+	min-height: 100vh;
+	overflow: visible;
+}
+
+#pathwayModal .modal-content{
+	max-width: 1080px;
+}
+
+.pathway-modal-grid{
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	grid-template-areas:
+		"funcion funcion"
+		"db      ref";
+	gap: 1.2rem;
+	margin-top: 16px;
+	align-items: start;
+}
+
+.pathway-card-funcion{ grid-area: funcion; }
+.pathway-card-db{ grid-area: db; }
+.pathway-card-ref{ grid-area: ref; }
+
+@media (max-width: 900px){
+	.pathway-modal-grid{
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas:
+			"funcion"
+			"db"
+			"ref";
+	}
+}
+
+.pathway-modal-meta{
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.6rem;
+	margin: 0.6rem 0 0.9rem;
+}
+
+/* Enlaces a bases de datos (WikiPathways, PathCards, STRING, Reactome) */
+.pathway-db-desc{
+	display: block;
+	font-size: 0.82rem;
+	color: rgba(255, 255, 255, 0.65);
+	margin: 0.15rem 0 0.35rem;
+}
+
+
+
+
+/* --- Biomarcadores--- */
+#biomarcadores{
+	padding: 1.2rem 0.8rem 2rem;
+}
+
+#biomarcadores .section-header{
+	text-align: left;
+	margin-bottom: 0.6rem;
+}
+
+#biomarcadores .section-header h2{
+	font-size: 1.9rem;
+	margin-bottom: 0.4rem;
+}
+
+/* --- Tabla de biomarcadores --- */
+#biomarkTable td.biomark-name-cell{
+	white-space: nowrap;
+}
+
+.biomark-name-link{
+	color: #5b85ff;
+	font-weight: 600;
+	cursor: pointer;
+	transition: color 0.3s ease;
+	background: none;
+	border: none;
+	padding: 0;
+	font-size: inherit;
+	font-family: inherit;
+	text-align: left;
+}
+
+.biomark-name-link:hover{
+	color: #ff6b6b;
+	text-decoration: underline;
+}
+
+.biomark-badge{
+	flex-shrink: 0;
+	font-size: 0.72rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	padding: 0.3rem 0.6rem;
+	border-radius: 999px;
+	white-space: nowrap;
+	border: 1px solid transparent;
+}
+
+.biomark-badge.tipo2{
+	background: rgba(91, 133, 255, 0.18);
+	border-color: rgba(91, 133, 255, 0.6);
+	color: #9ec2ff;
+}
+
+.biomark-chip{
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.32rem 0.7rem;
+	border-radius: 999px;
+	border: 1px solid rgba(91, 133, 255, 0.5);
+	background: rgba(255, 255, 255, 0.04);
+	font-size: 0.76rem;
+}
+
+.biomark-chip i{
+	color: #9ec2ff;
+	font-size: 0.9rem;
+}
+
+.biomark-chip-label{
+	color: #9ec2ff;
+	font-weight: 600;
+}
+
+.biomark-chip-value{
+	color: #fff;
+}
+
+/* --- Modal Biomarcadores (reutiliza .modal / .gene-card) --- */
+
+#biomarkerModal.modal{
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: auto;
+	min-height: 100vh;
+	overflow: visible;
+}
+
+#biomarkerModal .modal-content{
+	max-width: 1180px;
+}
+
+.biomark-modal-grid{
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	grid-template-areas:
+		"funcion funcion"
+		"ident   lit";
+	gap: 1.2rem;
+	margin-top: 16px;
+	align-items: start;
+}
+
+.biomark-card-funcion{ grid-area: funcion; }
+.biomark-card-ident{ grid-area: ident; }
+.biomark-card-lit{ grid-area: lit; }
+
+@media (max-width: 900px){
+	.biomark-modal-grid{
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas:
+			"funcion"
+			"ident"
+			"lit";
+	}
+}
+
+/* --- Metadatos dentro de la card de Función --- */
+.biomark-inline-meta{
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.6rem;
+	margin: 0.6rem 0 0.9rem;
+}
+
+.biomark-subhead{
+	font-size: 1rem;
+	color: #9ec2ff;
+	margin: 1.1rem 0 0.4rem;
+	padding-top: 0.8rem;
+	border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* --- Tabla de valores de referencia dentro del modal --- */
+.biomark-ref-table-wrap{
+	overflow-x: auto;
+	margin-top: 0.6rem;
+	border-radius: 10px;
+	border: 1px solid rgba(91, 133, 255, 0.25);
+}
+
+.biomark-ref-table{
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.85rem;
+}
+
+.biomark-ref-table th{
+	background: rgba(91, 133, 255, 0.18);
+	color: #9ec2ff;
+	text-align: left;
+	padding: 0.55rem 0.7rem;
+	white-space: nowrap;
+}
+
+.biomark-ref-table td{
+	padding: 0.55rem 0.7rem;
+	border-top: 1px solid rgba(255, 255, 255, 0.08);
+	color: #f1f1f1;
+	vertical-align: top;
+}
+
+.biomark-ref-table tr:nth-child(even) td{
+	background: rgba(255, 255, 255, 0.03);
+}
+
+/* --- Descripciones de bases de datos externas --- */
+.biomark-db-desc{
+	display: block;
+	font-size: 0.82rem;
+	color: rgba(255, 255, 255, 0.65);
+	margin: 0.15rem 0 0.35rem;
+}
+
+/* --- Nombre completo del receptor (card de identidad del eosinófilo) --- */
+.biomark-receptor-name{
+	font-size: 0.85rem;
+	color: #9ec2ff;
+}
+
+.biomark-receptor-list > li{
+	margin-bottom: 0.9rem;
+}
+
+.biomark-receptor-list > li:last-child{
+	margin-bottom: 0;
+}
+
+/* --- Estado vacío (sin resultados) --- */
+.biomark-empty-row td{
+	text-align: center;
+	padding: 1.6rem 1rem;
+	color: #ccc;
+	font-style: italic;
 }
